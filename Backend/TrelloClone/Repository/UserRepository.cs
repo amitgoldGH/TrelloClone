@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TrelloClone.Data;
 using TrelloClone.DTO;
 using TrelloClone.Interfaces;
@@ -34,37 +33,24 @@ namespace TrelloClone.Repository
             try
             {
                 var user = _context.Users
-                    .Include("Memberships")
-                    .Include("Memberships.KanbanBoard")
-                    .FirstOrDefault(user => user.Username == username); ;
+                     .Where(x => x.Username == username)
+                     .Include(user => user.Memberships).ThenInclude(mem => mem.KanbanBoard).Single();
+
+                var memberships = user.Memberships
+                    .Select(m => new MembershipDTO
+                    { BoardId = m.BoardId, Title = m.KanbanBoard.Title })
+                    .ToList();
 
                 Console.WriteLine("Breakpointline");
 
-                Console.WriteLine("Username: {0} is a member of {1} boards.", username, user.Memberships.Count());
-                
-                
-                /*Console.WriteLine("Username: " + username + ", ID of boards with membership:"); */
 
-                /*var count = user.Memberships.Count();*/
-
-                // TODO: Map the Board IDs via Board repository in future.
-
-                /*int[] membershipIdArray = new int[count];
-
-                for (int i = 0; i < count; i++)
-                {
-                    membershipIdArray[i] = user.Memberships.ElementAt(i).BoardId;
-                }*/
-
-                /*return new UserDTO(user.Username, membershipIdArray);*/
-
-                return new UserDTO(user.Username, user.Memberships);
+                return new UserDTO(user.Username, memberships);
 
             }
             catch (Exception ex)
             {
 
-                throw new Exception("User not found!");
+                throw new Exception(ex.Message);
             }
 
         }
