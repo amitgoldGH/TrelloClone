@@ -9,7 +9,7 @@ namespace TrelloClone.Interfaces
 
         UserDTO CreateUser(string username, string password);
 
-        UserDTO GetUser(string username);
+        UserDTO GetUser(string username, Func<string, bool> existVerificationFunc);
         ICollection<User> GetUsers();
 
         UserDTO UpdateUser(string username, string password);

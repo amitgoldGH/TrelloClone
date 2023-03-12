@@ -25,33 +25,34 @@ namespace TrelloClone.Repository
             throw new NotImplementedException();
         }
 
-        public UserDTO GetUser(string username)
+        public UserDTO GetUser(string username, Func<string, bool> existVerificationFunc)
         {
 
-            Console.WriteLine("In GetUser: " + username);
-
-            try
+            if (existVerificationFunc(username))
             {
-                var user = _context.Users
-                     .Where(x => x.Username == username)
-                     .Include(user => user.Memberships).ThenInclude(mem => mem.KanbanBoard).Single();
+                try
+                {
+                    var memberships = _context.Memberships
+                        .Where(m => m.UserId == username)
+                        .Select(b => new MembershipDTO
+                        {
+                            BoardId = b.BoardId,
+                            Title = b.KanbanBoard.Title
+                        }).ToList();
 
-                var memberships = user.Memberships
-                    .Select(m => new MembershipDTO
-                    { BoardId = m.BoardId, Title = m.KanbanBoard.Title })
-                    .ToList();
 
-                Console.WriteLine("Breakpointline");
+                    return new UserDTO(username, memberships);
 
+                }
+                catch (Exception ex)
+                {
 
-                return new UserDTO(user.Username, memberships);
-
+                    throw new Exception(ex.Message);
+                }
             }
-            catch (Exception ex)
-            {
+            else
+                return null;
 
-                throw new Exception(ex.Message);
-            }
 
         }
 

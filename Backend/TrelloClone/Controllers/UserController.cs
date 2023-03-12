@@ -36,17 +36,19 @@ namespace TrelloClone.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetUser(string username)
         {
-            if (!_userRepository.HasUser(username))
-                return NotFound("User not found");
-            else
+
+
+            var user = _userRepository.GetUser(username, _userRepository.HasUser);
+            if (user == null)
             {
-                var user = _userRepository.GetUser(username); 
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-                return Ok(user);
+                return NotFound("No user found with given username.");
             }
+            else if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            return Ok(user);
+
 
         }
     }
