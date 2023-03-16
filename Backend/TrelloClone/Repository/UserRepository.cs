@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using TrelloClone.Data;
 using TrelloClone.DTO;
 using TrelloClone.Interfaces;
@@ -10,21 +12,44 @@ namespace TrelloClone.Repository
     {
 
         private readonly DataContext _context;
-        public UserRepository(DataContext context)
+        private readonly IMapper _mapper;
+
+        public UserRepository(DataContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
-
-        public UserDTO CreateUser(string username, string password)
+        //DONE
+        public UserDTO CreateUser(string username, string password, Func<string, bool> existVerificationFunc)
         {
-            throw new NotImplementedException();
-        }
+            if (existVerificationFunc(username))
+            {
+                return null;
+            }
+            else
+            {
+                var user = new User { Username = username, Password = password, };
+                _context.Users.Add(user);
+                _context.SaveChanges();
 
-        public void DeleteUser(string username)
+                return new UserDTO
+                {
+                    Username = username,
+                };
+            }
+        }
+        //DONE
+        public void DeleteUser(string username, Func<string, bool> existVerificationFunc)
         {
-            throw new NotImplementedException();
+            if (existVerificationFunc(username))
+            {
+                var user = _context.Users.First(u => u.Username == username);
+                _context.Users.Remove(user);
+                _context.SaveChanges();
+            }
         }
 
+        //DONE
         public UserDTO GetUser(string username, Func<string, bool> existVerificationFunc)
         {
 
@@ -32,13 +57,37 @@ namespace TrelloClone.Repository
             {
                 try
                 {
-                    var memberships = _context.Memberships
+
+
+                    /*var memberships = _mapper
+                        .Map<List<Membership>, List<UserMembershipDTO>>
+                        (_context.Memberships
+                            .Where(u => u.UserId == username)
+                            .Include(u => u.KanbanBoard).ToList()
+                        );
+
+
+                    var membershi = _mapper.ProjectTo<UserMembershipDTO>
+                        (_context.Memberships.Where(u => u.UserId == username).Include(u => u.KanbanBoard))
+                        .ToList();*/
+
+
+
+                    /*var memberships = _context.Memberships
                         .Where(m => m.UserId == username)
-                        .Select(b => new MembershipDTO
+                        .Select(b => new UserMembershipDTO
                         {
                             BoardId = b.BoardId,
-                            Title = b.KanbanBoard.Title
-                        }).ToList();
+                            BoardTitle = b.KanbanBoard.Title
+                        }).ToList();*/
+
+
+                    var memberships = _context.Memberships
+                        .Where(u => u.UserId == username)
+                        .ProjectTo<UserMembershipDTO>(_mapper.ConfigurationProvider)
+                        .ToList();
+
+                    Console.WriteLine("TEST");
 
 
                     return new UserDTO(username, memberships);
@@ -55,23 +104,54 @@ namespace TrelloClone.Repository
 
 
         }
-
-        public ICollection<User> GetUsers()
+        //DONE
+        public ICollection<UserDTO> GetUsers()
         {
+            /*var users = _context.Users
+                        .Select(u => new UserDTO
+                        {
+                            Username = u.Username,
+                            Memberships = u.Memberships.Select(b => new UserMembershipDTO
+                            {
+                                BoardId = b.BoardId,
+                                BoardTitle = b.KanbanBoard.Title
+                            }).ToList()
+                        }).ToList();*/
 
-            Console.WriteLine("In GetUsers");
 
-            return _context.Users.OrderBy(u => u.Username).ToList();
+            var users = _context.Users.ProjectTo<UserDTO>(_mapper.ConfigurationProvider).ToList();
+
+            Console.WriteLine("Test");
+
+
+            return users.OrderBy(u => u.Username).ToList();
         }
-
+        //DONE
         public bool HasUser(string username)
         {
             return _context.Users.Any(u => u.Username == username);
         }
 
-        public UserDTO UpdateUser(string username, string password)
+        //DONE
+        public UserDTO UpdateUser(CredentialUserDTO updatedUser, Func<string, bool> existVerificationFunc)
         {
-            throw new NotImplementedException();
+            if (!(updatedUser == null))
+            {
+                if (existVerificationFunc(updatedUser.Username))
+                {
+                    var user = _context.Users.FirstOrDefault(u => u.Username == updatedUser.Username);
+                    user.Password = updatedUser.Password;
+                    _context.Users.Update(user);
+                    _context.SaveChanges();
+
+
+                    return new UserDTO { Username = user.Username, Memberships = _mapper.Map<List<UserMembershipDTO>>(user.Memberships) };
+                }
+                else
+                    return null;
+            }
+            else
+                return null;
         }
     }
 }
