@@ -6,14 +6,14 @@ namespace TrelloClone.DTO
     {
         public string Username { get; set; } // Private key
 
-        public ICollection<MembershipDTO> Memberships { get; set; }
+        public ICollection<UserMembershipDTO> Memberships { get; set; }
 
 
         public UserDTO()
         {
 
         }
-        public UserDTO(string username, ICollection<MembershipDTO> memberships)
+        public UserDTO(string username, ICollection<UserMembershipDTO> memberships)
         {
             Username = username;
             Memberships = memberships;
