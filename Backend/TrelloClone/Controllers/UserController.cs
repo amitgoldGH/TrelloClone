@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Net;
+using TrelloClone.DTO;
 using TrelloClone.Interfaces;
 using TrelloClone.Models;
 
@@ -17,12 +17,12 @@ namespace TrelloClone.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<User>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<UserDTO>))]
         public IActionResult GetUsers()
         {
             var users = _userRepository.GetUsers();
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -31,7 +31,7 @@ namespace TrelloClone.Controllers
         }
 
         [HttpGet("{username}")]
-        [ProducesResponseType(200, Type = typeof(User))]
+        [ProducesResponseType(200, Type = typeof(UserDTO))]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
         public IActionResult GetUser(string username)
@@ -50,6 +50,36 @@ namespace TrelloClone.Controllers
             return Ok(user);
 
 
+        }
+
+
+        [HttpPost("/register")]
+        [Consumes("application/json")]
+        [ProducesResponseType(200, Type = typeof(UserDTO))]
+        public IActionResult RegisterUser(CredentialUserDTO newUser)
+        {
+            var createdUser = _userRepository.CreateUser(newUser.Username, newUser.Password, _userRepository.HasUser);
+            if (createdUser == null)
+                return BadRequest("Failed to create user.");
+            else
+                return Ok(createdUser);
+        }
+
+
+        [HttpDelete("{username}")]
+        public IActionResult DeleteUser(string username)
+        {
+            _userRepository.DeleteUser(username, _userRepository.HasUser);
+
+            return Ok();
+        }
+
+        [HttpPut("/update")]
+        public IActionResult UpdateUser(CredentialUserDTO updatedUser)
+        {
+            var user = _userRepository.UpdateUser(updatedUser, _userRepository.HasUser);
+
+            return Ok(user);
         }
     }
 }
