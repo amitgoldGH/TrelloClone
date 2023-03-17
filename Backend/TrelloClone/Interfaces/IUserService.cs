@@ -1,12 +1,9 @@
 ﻿using TrelloClone.DTO;
-using TrelloClone.Models;
 
 namespace TrelloClone.Interfaces
 {
-    public interface IUserRepository
+    public interface IUserService
     {
-        Task<bool> HasUser(string username);
-
         Task<UserDTO> CreateUser(CredentialUserDTO newUser);
 
         Task<UserDTO> GetUser(string username);
