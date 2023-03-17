@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TrelloClone.DTO;
+using TrelloClone.Exceptions;
 using TrelloClone.Interfaces;
 using TrelloClone.Models;
+using TrelloClone.Services;
 
 namespace TrelloClone.Controllers
 {
@@ -9,18 +11,18 @@ namespace TrelloClone.Controllers
     [ApiController]
     public class UserController : Controller
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
 
-        public UserController(IUserRepository userRepository)
+        public UserController(IUserService userService)
         {
-            _userRepository = userRepository;
+            _userService = userService;
         }
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<UserDTO>))]
-        public IActionResult GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            var users = _userRepository.GetUsers();
+            var users = await _userService.GetUsers();
 
             if (!ModelState.IsValid)
             {
@@ -34,16 +36,13 @@ namespace TrelloClone.Controllers
         [ProducesResponseType(200, Type = typeof(UserDTO))]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
-        public IActionResult GetUser(string username)
+        [TrelloControllerFilter]
+        public async Task<IActionResult> GetUser(string username)
         {
 
 
-            var user = _userRepository.GetUser(username, _userRepository.HasUser);
-            if (user == null)
-            {
-                return NotFound("No user found with given username.");
-            }
-            else if (!ModelState.IsValid)
+            var user = await _userService.GetUser(username);
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -56,9 +55,10 @@ namespace TrelloClone.Controllers
         [HttpPost("/register")]
         [Consumes("application/json")]
         [ProducesResponseType(200, Type = typeof(UserDTO))]
-        public IActionResult RegisterUser(CredentialUserDTO newUser)
+        [TrelloControllerFilter]
+        public async Task<IActionResult> RegisterUser(CredentialUserDTO newUser)
         {
-            var createdUser = _userRepository.CreateUser(newUser.Username, newUser.Password, _userRepository.HasUser);
+            var createdUser = await _userService.CreateUser(newUser);
             if (createdUser == null)
                 return BadRequest("Failed to create user.");
             else
@@ -67,19 +67,27 @@ namespace TrelloClone.Controllers
 
 
         [HttpDelete("{username}")]
-        public IActionResult DeleteUser(string username)
+        public async Task<IActionResult> DeleteUser(string username)
         {
-            _userRepository.DeleteUser(username, _userRepository.HasUser);
+            await _userService.DeleteUser(username);
 
             return Ok();
         }
 
         [HttpPut("/update")]
-        public IActionResult UpdateUser(CredentialUserDTO updatedUser)
+        public async Task<IActionResult> UpdateUser(CredentialUserDTO updatedUser)
         {
-            var user = _userRepository.UpdateUser(updatedUser, _userRepository.HasUser);
+            var user = await _userService.UpdateUser(updatedUser);
 
             return Ok(user);
         }
+
+        /*[HttpGet("/TEST")]
+        public async Task<IActionResult> TestFunction(string username)
+        {
+            var user = await _userService.TestFunction(username);
+
+            return Ok(user);
+        }*/
     }
 }
