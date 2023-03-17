@@ -20,138 +20,78 @@ namespace TrelloClone.Repository
             _mapper = mapper;
         }
         //DONE
-        public UserDTO CreateUser(string username, string password, Func<string, bool> existVerificationFunc)
-        {
-            if (existVerificationFunc(username))
-            {
-                return null;
-            }
-            else
-            {
-                var user = new User { Username = username, Password = password, };
-                _context.Users.Add(user);
-                _context.SaveChanges();
-
-                return new UserDTO
-                {
-                    Username = username,
-                };
-            }
-        }
-        //DONE
-        public void DeleteUser(string username, Func<string, bool> existVerificationFunc)
-        {
-            if (existVerificationFunc(username))
-            {
-                var user = _context.Users.First(u => u.Username == username);
-                _context.Users.Remove(user);
-                _context.SaveChanges();
-            }
-        }
-
-        //DONE
-        public UserDTO GetUser(string username, Func<string, bool> existVerificationFunc)
+        public async Task<UserDTO> CreateUser(CredentialUserDTO newUser)
         {
 
-            if (existVerificationFunc(username))
+            var user = new User { Username = newUser.Username, Password = newUser.Password, };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            return new UserDTO
             {
-                try
-                {
-
-
-                    /*var memberships = _mapper
-                        .Map<List<Membership>, List<UserMembershipDTO>>
-                        (_context.Memberships
-                            .Where(u => u.UserId == username)
-                            .Include(u => u.KanbanBoard).ToList()
-                        );
-
-
-                    var membershi = _mapper.ProjectTo<UserMembershipDTO>
-                        (_context.Memberships.Where(u => u.UserId == username).Include(u => u.KanbanBoard))
-                        .ToList();*/
-
-
-
-                    /*var memberships = _context.Memberships
-                        .Where(m => m.UserId == username)
-                        .Select(b => new UserMembershipDTO
-                        {
-                            BoardId = b.BoardId,
-                            BoardTitle = b.KanbanBoard.Title
-                        }).ToList();*/
-
-
-                    var memberships = _context.Memberships
-                        .Where(u => u.UserId == username)
-                        .ProjectTo<UserMembershipDTO>(_mapper.ConfigurationProvider)
-                        .ToList();
-
-                    Console.WriteLine("TEST");
-
-
-                    return new UserDTO(username, memberships);
-
-                }
-                catch (Exception ex)
-                {
-
-                    throw new Exception(ex.Message);
-                }
-            }
-            else
-                return null;
-
+                Username = newUser.Username,
+            };
 
         }
         //DONE
-        public ICollection<UserDTO> GetUsers()
+        public async Task DeleteUser(string username)
         {
-            /*var users = _context.Users
-                        .Select(u => new UserDTO
-                        {
-                            Username = u.Username,
-                            Memberships = u.Memberships.Select(b => new UserMembershipDTO
-                            {
-                                BoardId = b.BoardId,
-                                BoardTitle = b.KanbanBoard.Title
-                            }).ToList()
-                        }).ToList();*/
-
-
-            var users = _context.Users.ProjectTo<UserDTO>(_mapper.ConfigurationProvider).ToList();
-
-            Console.WriteLine("Test");
-
-
-            return users.OrderBy(u => u.Username).ToList();
-        }
-        //DONE
-        public bool HasUser(string username)
-        {
-            return _context.Users.Any(u => u.Username == username);
+            var user = await _context.Users.FirstAsync(u => u.Username == username);
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
         }
 
         //DONE
-        public UserDTO UpdateUser(CredentialUserDTO updatedUser, Func<string, bool> existVerificationFunc)
+        public Task<UserDTO> GetUser(string username)
         {
-            if (!(updatedUser == null))
-            {
-                if (existVerificationFunc(updatedUser.Username))
-                {
-                    var user = _context.Users.FirstOrDefault(u => u.Username == updatedUser.Username);
-                    user.Password = updatedUser.Password;
-                    _context.Users.Update(user);
-                    _context.SaveChanges();
+
+            return _context.Users
+                .Where(u => u.Username == username)
+                .ProjectTo<UserDTO>(_mapper.ConfigurationProvider)
+                .FirstAsync();
 
 
-                    return new UserDTO { Username = user.Username, Memberships = _mapper.Map<List<UserMembershipDTO>>(user.Memberships) };
-                }
-                else
-                    return null;
-            }
-            else
-                return null;
+            /*var memberships = _context.Memberships
+                .Where(u => u.UserId == username)
+                .ProjectTo<UserMembershipDTO>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            Console.WriteLine("TEST");
+
+
+            return new UserDTO(username, memberships);*/
+
         }
+        //DONE
+        public async Task<ICollection<UserDTO>> GetUsers()
+        {
+            var users = await _context.Users
+             .ProjectTo<UserDTO>(_mapper.ConfigurationProvider)
+             .ToListAsync();
+
+            return users;
+
+        }
+        //DONE
+        public async Task<bool> HasUser(string username)
+        {
+            return await _context.Users.AnyAsync(u => u.Username == username);
+        }
+
+        //DONE
+        public async Task<UserDTO> UpdateUser(CredentialUserDTO updatedUser)
+        {
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == updatedUser.Username);
+            user.Password = updatedUser.Password;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<UserDTO>(user);
+
+
+        }
+
+
     }
 }
