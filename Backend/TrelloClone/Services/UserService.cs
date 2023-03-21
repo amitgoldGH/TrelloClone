@@ -21,7 +21,7 @@ namespace TrelloClone.Services
                 return await _userRepository.CreateUser(newUser);
             }
             else
-                throw new Exception("User already exists.");
+                throw new UserAlreadyExistsException();
         }
 
         public async Task DeleteUser(string username)
