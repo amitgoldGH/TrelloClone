@@ -18,9 +18,9 @@ namespace TrelloClone.Controllers
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<KanbanBoardDTO>))]
-        public IActionResult GetBoards()
+        public async Task<IActionResult> GetBoards()
         {
-            var boards = _boardRepository.GetAllBoards();
+            var boards = await _boardRepository.GetAllBoards();
             return Ok(boards);
         }
     }

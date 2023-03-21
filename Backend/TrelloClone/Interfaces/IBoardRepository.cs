@@ -1,22 +1,23 @@
-﻿using TrelloClone.Models;
+﻿using TrelloClone.DTO;
+using TrelloClone.Models;
 
 namespace TrelloClone.Interfaces
 {
     public interface IBoardRepository
     {
-        bool HasBoard(int boardid);
-        ICollection<KanbanBoard> GetAllBoards();
+        Task<bool> HasBoard(int boardid);
+        Task<ICollection<KanbanBoardDTO>> GetAllBoards();
 
-        ICollection<KanbanBoard> GetAllUserBoards(string username);
+        //ICollection<KanbanBoard> GetAllUserBoards(string username); // GetUser does this already.
 
-        KanbanBoard GetBoard(int boardid);
+        Task<KanbanBoardDTO> GetBoard(int boardid);
 
-        KanbanBoard AddMember(int boardid, string username);
+        Task<KanbanBoardDTO> AddMember(int boardid, string username);
 
-        KanbanBoard CreateBoard(string title, string username);
+        Task<KanbanBoardDTO> CreateBoard(string title, string username);
 
-        KanbanBoard UpdateBoard(int boardid, KanbanBoard newBoard);
-        void DeleteBoard(int boardid);
+        Task<KanbanBoardDTO> UpdateBoard(int boardid, KanbanBoard newBoard);
+        Task DeleteBoard(int boardid);
 
 
     }
