@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TrelloClone.Data;
-using TrelloClone.Interfaces;
+using TrelloClone.Interfaces.Repositories;
 using TrelloClone.Models;
 
 namespace TrelloClone.Repository

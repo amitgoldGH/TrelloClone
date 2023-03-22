@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TrelloClone.DTO;
 using TrelloClone.Exceptions;
-using TrelloClone.Interfaces;
+using TrelloClone.Interfaces.Services;
 using TrelloClone.Models;
 using TrelloClone.Services;
 
@@ -75,6 +75,7 @@ namespace TrelloClone.Controllers
         }
 
         [HttpPut("/update")]
+        [TrelloControllerFilter]
         public async Task<IActionResult> UpdateUser(CredentialUserDTO updatedUser)
         {
             var user = await _userService.UpdateUser(updatedUser);

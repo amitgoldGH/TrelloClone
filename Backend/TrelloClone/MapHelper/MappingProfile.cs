@@ -10,7 +10,9 @@ namespace TrelloClone.MapHelper
         {
             CreateMap<User, UserDTO>();
 
-            CreateMap<KanbanBoard, KanbanBoardDTO>().ForMember(dest => dest.Members, opt => opt.MapFrom(src => src.Memberships));
+            CreateMap<Comment, CommentDTO>();
+
+            CreateMap<KanbanBoard, KanbanBoardShortDTO>().ForMember(dest => dest.Members, opt => opt.MapFrom(src => src.Memberships));
 
             CreateMap<Membership, UserMembershipDTO>().ForMember(dest => dest.BoardTitle, opt => opt.MapFrom(src => src.KanbanBoard.Title));
 

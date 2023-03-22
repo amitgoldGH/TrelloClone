@@ -6,6 +6,8 @@
 
         public string Title { get; set; }
 
+        public int BoardId { get; set; }
+
         public KanbanBoard KanbanBoard { get; set; }
 
         public ICollection<Card> Cards { get; set; }

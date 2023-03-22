@@ -3,7 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using TrelloClone.Data;
 using TrelloClone.DTO;
-using TrelloClone.Interfaces;
+using TrelloClone.Interfaces.Repositories;
 using TrelloClone.Models;
 
 namespace TrelloClone.Repository
@@ -20,16 +20,16 @@ namespace TrelloClone.Repository
             _mapper = mapper;
         }
         //DONE
-        public async Task<UserDTO> CreateUser(CredentialUserDTO newUser)
+        public async Task<UserDTO> CreateUser(string username, string password)
         {
 
-            var user = new User { Username = newUser.Username, Password = newUser.Password, };
+            var user = new User { Username = username, Password = password, };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
             return new UserDTO
             {
-                Username = newUser.Username,
+                Username = username,
             };
 
         }
@@ -42,24 +42,15 @@ namespace TrelloClone.Repository
         }
 
         //DONE
-        public Task<UserDTO> GetUser(string username)
+        public async Task<UserDTO> GetUser(string username)
         {
+            var user = await _context.Users.FindAsync(username);
+            return _mapper.Map<UserDTO>(user);
 
-            return _context.Users
+            /*return _context.Users
                 .Where(u => u.Username == username)
                 .ProjectTo<UserDTO>(_mapper.ConfigurationProvider)
-                .FirstAsync();
-
-
-            /*var memberships = _context.Memberships
-                .Where(u => u.UserId == username)
-                .ProjectTo<UserMembershipDTO>(_mapper.ConfigurationProvider)
-                .ToList();
-
-            Console.WriteLine("TEST");
-
-
-            return new UserDTO(username, memberships);*/
+                .FirstAsync();*/
 
         }
         //DONE
@@ -79,11 +70,11 @@ namespace TrelloClone.Repository
         }
 
         //DONE
-        public async Task<UserDTO> UpdateUser(CredentialUserDTO updatedUser)
+        public async Task<UserDTO> UpdateUser(string username, string newPassword)
         {
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == updatedUser.Username);
-            user.Password = updatedUser.Password;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            user.Password = newPassword;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 

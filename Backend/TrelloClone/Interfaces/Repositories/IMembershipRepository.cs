@@ -1,4 +1,4 @@
-﻿namespace TrelloClone.Interfaces
+﻿namespace TrelloClone.Interfaces.Repositories
 {
     public interface IMembershipRepository
     {

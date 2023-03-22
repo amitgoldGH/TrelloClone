@@ -1,4 +1,5 @@
-﻿using TrelloClone.Interfaces;
+﻿using TrelloClone.Interfaces.Repositories;
+using TrelloClone.Interfaces.Services;
 
 namespace TrelloClone.Services
 {
@@ -20,7 +21,7 @@ namespace TrelloClone.Services
             }
             else
             {
-                // TODO THROW ERROR
+                // TODO THROW ERROR OR IGNORE SINCE ALREADY EXISTS
             }
 
         }
@@ -32,7 +33,11 @@ namespace TrelloClone.Services
 
         public async Task RemoveMembership(string username, int boardId)
         {
-            await _membershipRepository.RemoveMembership(username, boardId);
+            var memExists = await MembershipExists(username, boardId);
+            if (memExists)
+            {
+                await _membershipRepository.RemoveMembership(username, boardId);
+            }
         }
     }
 }
