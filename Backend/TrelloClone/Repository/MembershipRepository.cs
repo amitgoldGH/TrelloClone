@@ -9,12 +9,10 @@ namespace TrelloClone.Repository
     public class MembershipRepository : IMembershipRepository
     {
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
 
-        public MembershipRepository(DataContext context, IMapper mapper)
+        public MembershipRepository(DataContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task AddMembership(string username, int boardId)

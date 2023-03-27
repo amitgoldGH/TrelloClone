@@ -12,25 +12,20 @@ namespace TrelloClone.Repository
     {
 
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
 
-        public UserRepository(DataContext context, IMapper mapper)
+        public UserRepository(DataContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
         //DONE
-        public async Task<UserDTO> CreateUser(string username, string password)
+        public async Task<User> CreateUser(string username, string password)
         {
 
             var user = new User { Username = username, Password = password, };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            return new UserDTO
-            {
-                Username = username,
-            };
+            return user;
 
         }
         //DONE
@@ -42,10 +37,13 @@ namespace TrelloClone.Repository
         }
 
         //DONE
-        public async Task<UserDTO> GetUser(string username)
+        public async Task<User> GetUser(string username)
         {
-            var user = await _context.Users.FindAsync(username);
-            return _mapper.Map<UserDTO>(user);
+            var user = await _context.Users
+                .Include(u => u.Memberships)
+                .ThenInclude(m => m.KanbanBoard)
+                .FirstAsync(u => u.Username == username);
+            return user;
 
             /*return _context.Users
                 .Where(u => u.Username == username)
@@ -54,10 +52,11 @@ namespace TrelloClone.Repository
 
         }
         //DONE
-        public async Task<ICollection<UserDTO>> GetUsers()
+        public async Task<ICollection<User>> GetUsers()
         {
             var users = await _context.Users
-             .ProjectTo<UserDTO>(_mapper.ConfigurationProvider)
+             .Include(u => u.Memberships)
+             .ThenInclude(m => m.KanbanBoard)
              .ToListAsync();
 
             return users;
@@ -70,17 +69,12 @@ namespace TrelloClone.Repository
         }
 
         //DONE
-        public async Task<UserDTO> UpdateUser(string username, string newPassword)
+        public async Task<User> UpdateUser(User updatedUser)
         {
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            user.Password = newPassword;
-            _context.Users.Update(user);
+            _context.Users.Update(updatedUser);
             await _context.SaveChangesAsync();
-
-            return _mapper.Map<UserDTO>(user);
-
-
+            return updatedUser;
         }
 
 

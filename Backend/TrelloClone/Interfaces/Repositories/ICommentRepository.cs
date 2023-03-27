@@ -1,4 +1,5 @@
 ﻿using TrelloClone.DTO;
+using TrelloClone.Models;
 
 namespace TrelloClone.Interfaces.Repositories
 {
@@ -6,17 +7,17 @@ namespace TrelloClone.Interfaces.Repositories
     {
         Task<bool> HasComment(int commentId);
 
-        Task<ICollection<CommentDTO>> GetAllComments();
+        Task<ICollection<Comment>> GetAllComments();
 
-        Task<ICollection<CommentDTO>> GetAllCardComments(int cardId);
+        Task<ICollection<Comment>> GetAllCardComments(int cardId);
 
-        Task<ICollection<CommentDTO>> GetAllUserComments(string username);
+        Task<ICollection<Comment>> GetAllUserComments(string username);
 
-        Task<CommentDTO> GetComment(int commentId);
+        Task<Comment> GetComment(int commentId);
 
-        Task<CommentDTO> CreateComment(string authorName, string text, int cardId);
+        Task<Comment> CreateComment(string authorName, string text, int cardId);
 
-        Task<CommentDTO> UpdateComment(CommentDTO updatedComment);
+        Task<Comment> UpdateComment(Comment updatedComment);
 
         Task DeleteComment(int commentId);
     }

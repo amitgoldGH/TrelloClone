@@ -5,15 +5,15 @@ namespace TrelloClone.Interfaces.Repositories
 {
     public interface IBoardListRepository
     {
-        Task<ICollection<BoardListDTO>> GetAllBoardLists();
+        Task<ICollection<BoardList>> GetAllBoardLists();
 
-        Task<ICollection<BoardListDTO>> GetSpecificBoardLists(int kanbanBoardId);
+        Task<ICollection<BoardList>> GetSpecificBoardLists(int kanbanBoardId);
 
-        Task<BoardListDTO> GetSpecificList(int listId);
+        Task<BoardList> GetSpecificList(int listId);
 
-        Task<BoardListDTO> CreateBoardList(string title);
+        Task<BoardList> CreateBoardList(string title, int boardId);
 
-        Task<BoardListDTO> UpdateBoardList(int listId, string newTitle);
+        Task<BoardList> UpdateBoardList(BoardList updateList);
 
         Task DeleteBoardList(int listId);
 

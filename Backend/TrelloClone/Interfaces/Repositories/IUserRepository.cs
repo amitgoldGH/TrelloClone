@@ -7,13 +7,13 @@ namespace TrelloClone.Interfaces.Repositories
     {
         Task<bool> HasUser(string username);
 
-        Task<UserDTO> CreateUser(string username, string password);
+        Task<User> CreateUser(string username, string password);
 
-        Task<UserDTO> GetUser(string username);
+        Task<User> GetUser(string username);
 
-        Task<ICollection<UserDTO>> GetUsers();
+        Task<ICollection<User>> GetUsers();
 
-        Task<UserDTO> UpdateUser(string username, string newPassword);
+        Task<User> UpdateUser(User updatedUser);
 
         Task DeleteUser(string username);
 

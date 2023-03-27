@@ -11,17 +11,15 @@ namespace TrelloClone.Repository
     public class CardRepository : ICardRespository
     {
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
 
-        public CardRepository(DataContext context, IMapper mapper)
+        public CardRepository(DataContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
-        public async Task<CardDTO> CreateCard(string title, string description, int boardListId)
+        public async Task<Card> CreateCard(string title, string description, int boardListId)
         {
-            Card card = new Card()
+            Card card = new()
             {
                 Title = title,
                 Description = description,
@@ -31,50 +29,54 @@ namespace TrelloClone.Repository
             _context.Cards.Add(card);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<CardDTO>(card);
+            return card;
 
         }
 
         public async Task DeleteCard(int cardId)
         {
             var card = await _context.Cards.FindAsync(cardId);
-            _context.Cards.Remove(card);
-            await _context.SaveChangesAsync();
+            if (card != null)
+            {
+                _context.Cards.Remove(card);
+                await _context.SaveChangesAsync();
+            }
 
         }
 
-        public async Task<ICollection<CardDTO>> GetAllCards()
+        public async Task<ICollection<Card>> GetAllCards()
         {
             return await _context.Cards
-                .ProjectTo<CardDTO>(_mapper.ConfigurationProvider)
+                .Include(c => c.Assignments).ThenInclude(ass => ass.User)
                 .ToListAsync();
         }
 
-        public async Task<ICollection<CardDTO>> GetAllCardsByList(int listId)
+        public async Task<ICollection<Card>> GetAllCardsByList(int listId)
         {
             return await _context.Cards
                 .Where(card => card.BoardListId == listId)
-                .ProjectTo<CardDTO>(_mapper.ConfigurationProvider)
+                .Include(c => c.Assignments).ThenInclude(ass => ass.User)
                 .ToListAsync();
         }
 
-        public async Task<CardDTO> GetCard(int cardId)
+        public async Task<Card> GetCard(int cardId)
         {
-            return _mapper.Map<CardDTO>(await _context.Cards.FindAsync(cardId));
+            return await _context.Cards
+                .Include(c => c.Assignments).ThenInclude(ass => ass.User)
+                .FirstAsync(c => c.Id == cardId);
         }
 
-        public async Task<CardDTO> UpdateCard(CardDTO updatedCard)
+        public async Task<bool> HasCard(int cardId)
         {
-            var oldCard = await _context.Cards.FindAsync(updatedCard.Id);
+            return await _context.Cards.AnyAsync(card => card.Id == cardId);
+        }
 
-            oldCard.Title = updatedCard.Title;
-            oldCard.Description = updatedCard.Description;
-            oldCard.Status = updatedCard.Status;
+        public async Task<Card> UpdateCard(Card updatedCard)
+        {
 
-            _context.Cards.Update(oldCard);
+            _context.Cards.Update(updatedCard);
             await _context.SaveChangesAsync();
-
-            return _mapper.Map<CardDTO>(oldCard);
+            return updatedCard;
         }
     }
 }

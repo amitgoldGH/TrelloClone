@@ -1,4 +1,6 @@
-﻿using TrelloClone.DTO;
+﻿using TrelloClone.DTO.Creation;
+using TrelloClone.DTO.Display;
+using TrelloClone.DTO.Update;
 using TrelloClone.Interfaces.Repositories;
 using TrelloClone.Models;
 
@@ -15,16 +17,21 @@ namespace TrelloClone.Interfaces.Services
 
         Task RemoveMembers(string[] usernames, int boardid);
 
-        Task<KanbanBoardShortDTO> CreateBoard(string title, string username);
+        Task<BoardDTO> CreateBoard(NewKanbanDTO newKanban);
 
         Task DeleteBoard(int boardid);
 
-        Task<ICollection<KanbanBoardShortDTO>> GetAllBoards();
+        Task<ICollection<BoardDTO>> GetAllBoards();
 
-        Task<KanbanBoardShortDTO> GetBoard(int boardid);
+        Task<BoardDTO> GetBoard(int boardid);
 
         Task<bool> HasBoard(int boardid);
 
-        Task<KanbanBoardShortDTO> UpdateBoard(KanbanBoardShortDTO newBoard);
+        Task<BoardDTO> UpdateBoard(UpdateKanbanBoardDTO updatedBoard);
+
+        Task<ICollection<BoardDisplayDTO>> GetAllDisplayBoards();
+        Task<BoardDisplayDTO> GetDisplayBoard(int boardid);
+
+
     }
 }

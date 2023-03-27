@@ -1,11 +1,12 @@
-﻿using TrelloClone.DTO;
+﻿using TrelloClone.DTO.Creation;
+using TrelloClone.DTO.Display;
 using TrelloClone.Interfaces.Repositories;
 
 namespace TrelloClone.Interfaces.Services
 {
     public interface ICommentService
     {
-        Task<CommentDTO> CreateComment(string authorName, string text, int cardId);
+        Task<CommentDTO> CreateComment(NewCommentDTO newComment);
         Task DeleteComment(int commentId);
         Task<ICollection<CommentDTO>> GetAllCardComments(int cardId);
         Task<ICollection<CommentDTO>> GetAllComments();

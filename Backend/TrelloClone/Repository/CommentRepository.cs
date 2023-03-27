@@ -11,14 +11,12 @@ namespace TrelloClone.Repository
     public class CommentRepository : ICommentRepository
     {
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
 
-        public CommentRepository(DataContext context, IMapper mapper)
+        public CommentRepository(DataContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
-        public async Task<CommentDTO> CreateComment(string authorName, string text, int cardId)
+        public async Task<Comment> CreateComment(string authorName, string text, int cardId)
         {
             Comment comment = new()
             {
@@ -30,7 +28,7 @@ namespace TrelloClone.Repository
             await _context.Comments.AddAsync(comment);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<CommentDTO>(comment);
+            return comment;
         }
 
         public async Task DeleteComment(int commentId)
@@ -44,39 +42,36 @@ namespace TrelloClone.Repository
             }
         }
 
-        public async Task<ICollection<CommentDTO>> GetAllCardComments(int cardId)
+        public async Task<ICollection<Comment>> GetAllCardComments(int cardId)
         {
             var comments = await _context.Comments
                 .Where(comm => comm.CardId == cardId)
-                .ProjectTo<CommentDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
             return comments;
         }
 
-        public async Task<ICollection<CommentDTO>> GetAllComments()
+        public async Task<ICollection<Comment>> GetAllComments()
         {
             var comments = await _context.Comments
-                .ProjectTo<CommentDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
             return comments;
         }
 
-        public async Task<ICollection<CommentDTO>> GetAllUserComments(string username)
+        public async Task<ICollection<Comment>> GetAllUserComments(string username)
         {
             var comments = await _context.Comments
                 .Where(comm => comm.AuthorName == username)
-                .ProjectTo<CommentDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
             return comments;
         }
 
-        public async Task<CommentDTO> GetComment(int commentId)
+        public async Task<Comment> GetComment(int commentId)
         {
             var comment = await _context.Comments.FindAsync(commentId);
-            return _mapper.Map<CommentDTO>(comment);
+            return comment;
         }
 
         public async Task<bool> HasComment(int commentId)
@@ -86,17 +81,13 @@ namespace TrelloClone.Repository
             return exists;
         }
 
-        public async Task<CommentDTO> UpdateComment(CommentDTO updatedComment)
+        public async Task<Comment> UpdateComment(Comment updatedComment)
         {
-            var oldComment = await _context.Comments.FindAsync(updatedComment.Id);
 
-            oldComment.Text = updatedComment.Text;
-
-            _context.Comments.Update(oldComment);
+            _context.Comments.Update(updatedComment);
 
             await _context.SaveChangesAsync();
-
-            return _mapper.Map<CommentDTO>(oldComment);
+            return updatedComment;
         }
     }
 }

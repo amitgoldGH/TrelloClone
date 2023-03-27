@@ -1,4 +1,4 @@
-﻿namespace TrelloClone.DTO
+﻿namespace TrelloClone.DTO.Display
 {
     public class CardDTO
     {
@@ -8,9 +8,11 @@
 
         public string Description { get; set; }
 
-        public int BoardListId { get; set; }
-
         public int Status { get; set; }
+
+        //public int BoardListId { get; set; }
+
+        public ICollection<CardAssignmentDTO> AssignmentList { get; set; }
 
         public ICollection<CommentDTO> Comments { get; set; }
     }

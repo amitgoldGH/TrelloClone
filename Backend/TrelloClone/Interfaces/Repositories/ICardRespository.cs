@@ -1,19 +1,22 @@
 ﻿using TrelloClone.DTO;
+using TrelloClone.Models;
 
 namespace TrelloClone.Interfaces.Repositories
 {
     public interface ICardRespository
     {
-        Task<CardDTO> CreateCard(string title, string description, int boardListId);
+        Task<bool> HasCard(int cardId);
 
-        Task<CardDTO> UpdateCard(CardDTO updatedCard);
+        Task<Card> CreateCard(string title, string description, int boardListId);
+
+        Task<Card> UpdateCard(Card updatedCard);
 
         Task DeleteCard(int cardId);
 
-        Task<CardDTO> GetCard(int cardId);
+        Task<Card> GetCard(int cardId);
 
-        Task<ICollection<CardDTO>> GetAllCards();
+        Task<ICollection<Card>> GetAllCards();
 
-        Task<ICollection<CardDTO>> GetAllCardsByList(int listId);
+        Task<ICollection<Card>> GetAllCardsByList(int listId);
     }
 }

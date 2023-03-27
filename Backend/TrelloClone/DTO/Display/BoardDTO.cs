@@ -1,15 +1,15 @@
-﻿
-namespace TrelloClone.DTO
+﻿namespace TrelloClone.DTO.Display
 {
 
-    public class KanbanBoardShortDTO
+    public class BoardDTO
     {
 
         public int Id { get; set; }
         public string Title { get; set; }
         public ICollection<BoardMembershipDTO> Members { get; set; }
 
-        public KanbanBoardShortDTO()
+        public ICollection<BoardListDTO> Lists { get; set; }
+        public BoardDTO()
         {
 
         }

@@ -1,53 +1,78 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using TrelloClone.Data;
 using TrelloClone.DTO;
 using TrelloClone.Interfaces.Repositories;
+using TrelloClone.Models;
 
 namespace TrelloClone.Repository
 {
     public class BoardListRepository : IBoardListRepository
     {
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
 
-        public BoardListRepository(DataContext context, IMapper mapper)
+        public BoardListRepository(DataContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
-        public Task<BoardListDTO> CreateBoardList(string title)
+        public async Task<BoardList> CreateBoardList(string title, int boardId)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteBoardList(int listId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<ICollection<BoardListDTO>> GetAllBoardLists()
-        {
-            throw new NotImplementedException();
+            BoardList newList = new()
+            {
+                BoardId = boardId,
+                Title = title,
+            };
+            _context.BoardLists.Add(newList);
+            await _context.SaveChangesAsync();
+            return newList;
         }
 
-        public Task<ICollection<BoardListDTO>> GetSpecificBoardLists(int kanbanBoardId)
+        public async Task DeleteBoardList(int listId)
         {
-            throw new NotImplementedException();
+            var list = await _context.BoardLists.FindAsync(listId);
+            if (list != null)
+            {
+                _context.BoardLists.Remove(list);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public Task<BoardListDTO> GetSpecificList(int listId)
+        public async Task<ICollection<BoardList>> GetAllBoardLists()
         {
-            throw new NotImplementedException();
+            var lists = await _context.BoardLists
+                .Include(bList => bList.Cards)
+                .ToListAsync();
+            return lists;
         }
 
-        public Task<bool> HasList(int listId)
+        public async Task<ICollection<BoardList>> GetSpecificBoardLists(int kanbanBoardId)
         {
-            throw new NotImplementedException();
+            var lists = await _context.BoardLists
+                .Where(bList => bList.BoardId == kanbanBoardId)
+                .Include(bList => bList.Cards)
+                .ToListAsync();
+            return lists;
         }
 
-        public Task<BoardListDTO> UpdateBoardList(int listId, string newTitle)
+        public async Task<BoardList> GetSpecificList(int listId)
         {
-            throw new NotImplementedException();
+            var list = await _context.BoardLists
+                .Where(bList => bList.Id == listId)
+                .Include(bList => bList.Cards)
+                .FirstAsync();
+            return list;
+        }
+
+        public async Task<bool> HasList(int listId)
+        {
+            return await _context.BoardLists.AnyAsync(bList => bList.Id == listId);
+        }
+
+        public async Task<BoardList> UpdateBoardList(BoardList updatedList)
+        {
+            _context.BoardLists.Update(updatedList);
+            await _context.SaveChangesAsync();
+            return updatedList;
         }
     }
 }

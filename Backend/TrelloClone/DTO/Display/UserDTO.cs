@@ -1,6 +1,6 @@
 ﻿using TrelloClone.Models;
 
-namespace TrelloClone.DTO
+namespace TrelloClone.DTO.Display
 {
     public class UserDTO
     {

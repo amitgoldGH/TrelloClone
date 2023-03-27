@@ -1,4 +1,7 @@
-﻿using TrelloClone.DTO;
+﻿using AutoMapper;
+using System.Reflection.Metadata.Ecma335;
+using TrelloClone.DTO.Creation;
+using TrelloClone.DTO.Display;
 using TrelloClone.Exceptions;
 using TrelloClone.Interfaces.Repositories;
 using TrelloClone.Interfaces.Services;
@@ -8,24 +11,28 @@ namespace TrelloClone.Services
 {
     public class CommentService : ICommentService
     {
+        private readonly IMapper _mapper;
         private readonly ICommentRepository _commentRepository;
         private readonly IUserService _userService;
 
         //TODO ADD CARD SERVICE TO DEP INJECTION
-        public CommentService(ICommentRepository commentRepository, IUserService userService)
+        public CommentService(IMapper mapper, ICommentRepository commentRepository, IUserService userService)
         {
+            _mapper = mapper;
             _commentRepository = commentRepository;
             _userService = userService;
         }
 
-        public async Task<CommentDTO> CreateComment(string authorName, string text, int cardId)
+        public async Task<CommentDTO> CreateComment(NewCommentDTO newComment)
         {
-            var userExists = await _userService.HasUser(authorName);
+            if (newComment == null)
+                throw new NotImplementedException(); // COMMENT BAD REQUEST EXCEPTION
+            var userExists = await _userService.HasUser(newComment.AuthorName);
 
             if (userExists)
             {
                 // TODO : ADD CARD VERIFICATION + TEXT VERIFICATION
-                return await _commentRepository.CreateComment(authorName, text, cardId);
+                return _mapper.Map<CommentDTO>(await _commentRepository.CreateComment(newComment.AuthorName, newComment.Text, newComment.CardId));
             }
             else
             {
@@ -44,13 +51,13 @@ namespace TrelloClone.Services
         public async Task<ICollection<CommentDTO>> GetAllCardComments(int cardId)
         {
             var comments = await _commentRepository.GetAllCardComments(cardId);
-            return comments;
+            return _mapper.Map<List<CommentDTO>>(comments);
         }
 
         public async Task<ICollection<CommentDTO>> GetAllComments()
         {
             var comments = await _commentRepository.GetAllComments();
-            return comments;
+            return _mapper.Map<List<CommentDTO>>(comments);
         }
 
         public async Task<ICollection<CommentDTO>> GetAllUserComments(string username)
@@ -58,7 +65,7 @@ namespace TrelloClone.Services
             var userExists = await _userService.HasUser(username);
             if (userExists)
             {
-                return await _commentRepository.GetAllUserComments(username);
+                return _mapper.Map<List<CommentDTO>>(await _commentRepository.GetAllUserComments(username));
             }
             else { throw new UserNotFoundException(); }
         }
@@ -69,8 +76,7 @@ namespace TrelloClone.Services
 
             if (commentExists)
             {
-                var comment = await _commentRepository.GetComment(commentId);
-                return comment;
+                return _mapper.Map<CommentDTO>(await _commentRepository.GetComment(commentId));
             }
             else
                 throw new NotImplementedException(); // TODO Create NOT COMMENT NOT FOUND EXCEPTION
@@ -92,7 +98,11 @@ namespace TrelloClone.Services
                 var commExists = await HasComment(comment.Id);
                 if (commExists)
                 {
-                    return await _commentRepository.UpdateComment(comment);
+                    var comm = await _commentRepository.GetComment(comment.Id);
+                    comm.Text = comment.Text;
+                    comm.AuthorName = comment.AuthorName;
+
+                    return _mapper.Map<CommentDTO>(await _commentRepository.UpdateComment(comm));
                 }
                 else
                 {

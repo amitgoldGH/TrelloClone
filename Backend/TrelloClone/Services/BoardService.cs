@@ -1,4 +1,7 @@
-﻿using TrelloClone.DTO;
+﻿using AutoMapper;
+using TrelloClone.DTO.Creation;
+using TrelloClone.DTO.Display;
+using TrelloClone.DTO.Update;
 using TrelloClone.Exceptions;
 using TrelloClone.Interfaces.Repositories;
 using TrelloClone.Interfaces.Services;
@@ -8,12 +11,14 @@ namespace TrelloClone.Services
 {
     public class BoardService : IBoardService
     {
+        private readonly IMapper _mapper;
         private readonly IBoardRepository _boardRepository;
         private readonly IMembershipService _membershipService;
         private readonly IUserService _userService;
 
-        public BoardService(IBoardRepository boardRepository, IMembershipService membershipService, IUserService userService)
+        public BoardService(IMapper mapper, IBoardRepository boardRepository, IMembershipService membershipService, IUserService userService)
         {
+            _mapper = mapper;
             _boardRepository = boardRepository;
             _membershipService = membershipService;
             _userService = userService;
@@ -101,18 +106,25 @@ namespace TrelloClone.Services
             }
         }
 
-        public async Task<KanbanBoardShortDTO> CreateBoard(string title, string username)
+        public async Task<BoardDTO> CreateBoard(NewKanbanDTO newBoard)
         {
-            var userExists = await _userService.HasUser(username);
-            if (userExists)
+            if (newBoard == null)
             {
-                var board = await _boardRepository.CreateBoard(title, username);
-                await AddMember(username, board.Id);
-                return board;
+                throw new BoardBadRequestException();
             }
             else
             {
-                throw new BoardBadRequestException();
+                var userExists = await _userService.HasUser(newBoard.UserId);
+                if (userExists)
+                {
+                    var board = await _boardRepository.CreateBoard(newBoard.Title);
+                    await AddMember(newBoard.UserId, board.Id);
+                    return _mapper.Map<BoardDTO>(board);
+                }
+                else
+                {
+                    throw new BoardBadRequestException();
+                }
             }
         }
 
@@ -130,36 +142,52 @@ namespace TrelloClone.Services
             await _boardRepository.DeleteBoard(board.Id);
         }
 
-        public async Task<ICollection<KanbanBoardShortDTO>> GetAllBoards()
+        public async Task<ICollection<BoardDTO>> GetAllBoards()
         {
             var boards = await _boardRepository.GetAllBoards();
-            return boards;
+            return _mapper.Map<List<BoardDTO>>(boards);
         }
 
-        public async Task<KanbanBoardShortDTO> GetBoard(int boardid)
+        public async Task<BoardDTO> GetBoard(int boardid)
         {
             var boardExists = await HasBoard(boardid);
 
             if (boardExists)
-                return await _boardRepository.GetBoard(boardid);
+                return _mapper.Map<BoardDTO>(await _boardRepository.GetBoard(boardid));
             else
                 throw new BoardNotFoundException();
 
 
         }
 
+        public async Task<ICollection<BoardDisplayDTO>> GetAllDisplayBoards()
+        {
+            var boards = await _boardRepository.GetAllBoards();
+            return _mapper.Map<List<BoardDisplayDTO>>(boards);
+        }
+        public async Task<BoardDisplayDTO> GetDisplayBoard(int boardid)
+        {
+            var boardExists = await HasBoard(boardid);
+            if (boardExists)
+                return _mapper.Map<BoardDisplayDTO>(await _boardRepository.GetBoard(boardid));
+            else
+                throw new BoardNotFoundException();
+        }
         public Task<bool> HasBoard(int boardid)
         {
             return _boardRepository.HasBoard(boardid);
         }
 
-        public async Task<KanbanBoardShortDTO> UpdateBoard(KanbanBoardShortDTO newBoard)
+        public async Task<BoardDTO> UpdateBoard(UpdateKanbanBoardDTO updatedBoard)
         {
-            var boardExists = await HasBoard(newBoard.Id);
-
+            var boardExists = await HasBoard(updatedBoard.Id);
             if (boardExists)
             {
-                return await _boardRepository.UpdateBoard(newBoard.Id, newBoard.Title);
+                var board = await _boardRepository.GetBoard(updatedBoard.Id);
+                if (updatedBoard.NewTitle != null)
+                    board.Title = updatedBoard.NewTitle;
+                return _mapper.Map<BoardDTO>(await _boardRepository.UpdateBoard(board));
+
             }
             else
                 throw new BoardNotFoundException();

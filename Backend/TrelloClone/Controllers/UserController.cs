@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TrelloClone.DTO;
+using TrelloClone.DTO.Creation;
+using TrelloClone.DTO.Display;
 using TrelloClone.Exceptions;
 using TrelloClone.Interfaces.Services;
 using TrelloClone.Models;

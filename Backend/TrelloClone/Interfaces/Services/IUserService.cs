@@ -1,4 +1,5 @@
-﻿using TrelloClone.DTO;
+﻿using TrelloClone.DTO.Creation;
+using TrelloClone.DTO.Display;
 using TrelloClone.Interfaces.Repositories;
 
 namespace TrelloClone.Interfaces.Services

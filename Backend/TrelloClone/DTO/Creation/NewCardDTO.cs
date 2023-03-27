@@ -1,4 +1,4 @@
-﻿namespace TrelloClone.DTO
+﻿namespace TrelloClone.DTO.Creation
 {
     public class NewCardDTO
     {
