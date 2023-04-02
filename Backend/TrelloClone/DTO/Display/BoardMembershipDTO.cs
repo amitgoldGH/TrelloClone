@@ -1,4 +1,4 @@
-﻿namespace TrelloClone.DTO
+﻿namespace TrelloClone.DTO.Display
 {
     public class BoardMembershipDTO
     {
@@ -6,7 +6,7 @@
 
         public BoardMembershipDTO()
         {
-               
+
         }
     }
 }

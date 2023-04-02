@@ -10,6 +10,8 @@
 
         public int Status { get; set; }
 
+        public int BoardListId { get; set; } // Foreign Key
+
         public BoardList BoardList { get; set; }
 
         public ICollection<Comment> Comments { get; set; }

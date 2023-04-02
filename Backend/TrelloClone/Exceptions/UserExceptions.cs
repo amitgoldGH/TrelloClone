@@ -2,25 +2,24 @@
 
 namespace TrelloClone.Exceptions
 {
-    public class UserExceptions : Exception
+    public class UserBadRequestException : Exception
     {
-        public UserExceptions()
+        public UserBadRequestException()
         {
         }
 
-        public UserExceptions(string? message) : base(message)
+        public UserBadRequestException(string? message) : base(message)
         {
         }
 
-        public UserExceptions(string? message, Exception? innerException) : base(message, innerException)
+        public UserBadRequestException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
 
-        protected UserExceptions(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected UserBadRequestException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }
-
     public class UserNotFoundException : Exception
     {
         public UserNotFoundException()
@@ -55,6 +54,25 @@ namespace TrelloClone.Exceptions
         }
 
         protected UserAlreadyExistsException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+    }
+
+    public class UserIncorrectLogin : Exception
+    {
+        public UserIncorrectLogin()
+        {
+        }
+
+        public UserIncorrectLogin(string? message) : base(message)
+        {
+        }
+
+        public UserIncorrectLogin(string? message, Exception? innerException) : base(message, innerException)
+        {
+        }
+
+        protected UserIncorrectLogin(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

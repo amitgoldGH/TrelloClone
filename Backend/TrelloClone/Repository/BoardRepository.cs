@@ -3,7 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using TrelloClone.Data;
 using TrelloClone.DTO;
-using TrelloClone.Interfaces;
+using TrelloClone.Interfaces.Repositories;
 using TrelloClone.Models;
 
 namespace TrelloClone.Repository
@@ -12,70 +12,63 @@ namespace TrelloClone.Repository
     {
 
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
 
-        public BoardRepository(DataContext context, IMapper mapper)
+        public BoardRepository(DataContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         // SHOULD BE DONE IN BOARD SERVICE, VIA MEMBERSHIP SERVICE.
-        public Task<KanbanBoardDTO> AddMember(int boardid, string username)
+        /*public Task<KanbanBoardDTO> AddMember(int boardid, string username)
         {
             throw new NotImplementedException();
-        }
+        }*/
 
-        public async Task<KanbanBoardDTO> CreateBoard(string title, string username)
+        public async Task<KanbanBoard> CreateBoard(string title)
         {
 
-            KanbanBoard newBoard = new KanbanBoard();
-            newBoard.Title = title;
-            newBoard.Memberships.Add(new Membership() { BoardId = newBoard.Id, UserId = username });
+            KanbanBoard newBoard = new() { Title = title };
+
+            //newBoard.Memberships.Add(new Membership() { BoardId = newBoard.Id, UserId = username });
 
             await _context.Boards.AddAsync(newBoard);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<KanbanBoardDTO>(newBoard);
+            return newBoard;
         }
 
         public async Task DeleteBoard(int boardid)
         {
-            var board = await _context.Boards.FirstAsync(b => b.Id == boardid);
-            _context.Boards.Remove(board);
+            var board = await _context.Boards.FindAsync(boardid);
+            if (board != null)
+            {
+                _context.Boards.Remove(board);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public async Task<ICollection<KanbanBoardDTO>> GetAllBoards()
+        public async Task<ICollection<KanbanBoard>> GetAllBoards()
         {
 
             var boards = await _context.Boards
-                .ProjectTo<KanbanBoardDTO>(_mapper.ConfigurationProvider)
+                .Include(b => b.Memberships).ThenInclude(m => m.User)
+                .Include(b => b.BoardLists).ThenInclude(bList => bList.Cards)
                 .ToListAsync();
 
 
             return boards;
-
-            /*return _context.Boards
-                .Select(b => new KanbanBoardDTO
-                {
-                    Id = b.Id,
-                    Title = b.Title,
-                    Members = b.Memberships
-                        .Select(m => new BoardMembershipDTO
-                        {
-                            Username = m.UserId
-                        }).ToList(),
-                }).ToList();*/
         }
 
-        public async Task<KanbanBoardDTO> GetBoard(int boardid)
+        public async Task<KanbanBoard> GetBoard(int boardid)
         {
             var board = await _context.Boards
-                .Where(b => b.Id == boardid)
-                .ProjectTo<KanbanBoardDTO>(_mapper.ConfigurationProvider)
-                .SingleAsync();
+                .Include(b => b.Memberships).ThenInclude(m => m.User)
+                .Include(b => b.BoardLists).ThenInclude(bList => bList.Cards)
+                .FirstAsync(b => b.Id == boardid);
 
             return board;
+
+
         }
 
         public async Task<bool> HasBoard(int boardid)
@@ -84,16 +77,13 @@ namespace TrelloClone.Repository
             return boardExists;
         }
 
-        public async Task<KanbanBoardDTO> UpdateBoard(int boardid, KanbanBoard newBoard)
+        public async Task<KanbanBoard> UpdateBoard(KanbanBoard updatedBoard)
         {
-            var oldBoard = await _context.Boards.Where(b => b.Id == boardid).SingleAsync();
 
-            oldBoard.Title = newBoard.Title;
-
-            _context.Boards.Update(oldBoard);
+            _context.Boards.Update(updatedBoard);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<KanbanBoardDTO>(oldBoard);
+            return updatedBoard;
         }
     }
 }

@@ -3,7 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using TrelloClone.Data;
 using TrelloClone.DTO;
-using TrelloClone.Interfaces;
+using TrelloClone.Interfaces.Repositories;
 using TrelloClone.Models;
 
 namespace TrelloClone.Repository
@@ -12,25 +12,20 @@ namespace TrelloClone.Repository
     {
 
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
 
-        public UserRepository(DataContext context, IMapper mapper)
+        public UserRepository(DataContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
         //DONE
-        public async Task<UserDTO> CreateUser(CredentialUserDTO newUser)
+        public async Task<User> CreateUser(string username, string password)
         {
 
-            var user = new User { Username = newUser.Username, Password = newUser.Password, };
+            var user = new User { Username = username, Password = password, Role = "User" };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            return new UserDTO
-            {
-                Username = newUser.Username,
-            };
+            return user;
 
         }
         //DONE
@@ -42,31 +37,26 @@ namespace TrelloClone.Repository
         }
 
         //DONE
-        public Task<UserDTO> GetUser(string username)
+        public async Task<User> GetUser(string username)
         {
+            var user = await _context.Users
+                .Include(u => u.Memberships)
+                .ThenInclude(m => m.KanbanBoard)
+                .FirstAsync(u => u.Username == username);
+            return user;
 
-            return _context.Users
+            /*return _context.Users
                 .Where(u => u.Username == username)
                 .ProjectTo<UserDTO>(_mapper.ConfigurationProvider)
-                .FirstAsync();
-
-
-            /*var memberships = _context.Memberships
-                .Where(u => u.UserId == username)
-                .ProjectTo<UserMembershipDTO>(_mapper.ConfigurationProvider)
-                .ToList();
-
-            Console.WriteLine("TEST");
-
-
-            return new UserDTO(username, memberships);*/
+                .FirstAsync();*/
 
         }
         //DONE
-        public async Task<ICollection<UserDTO>> GetUsers()
+        public async Task<ICollection<User>> GetUsers()
         {
             var users = await _context.Users
-             .ProjectTo<UserDTO>(_mapper.ConfigurationProvider)
+             .Include(u => u.Memberships)
+             .ThenInclude(m => m.KanbanBoard)
              .ToListAsync();
 
             return users;
@@ -79,19 +69,23 @@ namespace TrelloClone.Repository
         }
 
         //DONE
-        public async Task<UserDTO> UpdateUser(CredentialUserDTO updatedUser)
+        public async Task<User> UpdateUser(User updatedUser)
         {
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == updatedUser.Username);
-            user.Password = updatedUser.Password;
-            _context.Users.Update(user);
+            _context.Users.Update(updatedUser);
             await _context.SaveChangesAsync();
-
-            return _mapper.Map<UserDTO>(user);
-
-
+            return updatedUser;
         }
 
+        public async Task UpdateRole(string username, string roleName)
+        {
+            var user = await _context.Users.FindAsync(username);
+            if (user != null)
+            {
+                user.Role = roleName;
+                await _context.SaveChangesAsync();
+            }
 
+        }
     }
 }
