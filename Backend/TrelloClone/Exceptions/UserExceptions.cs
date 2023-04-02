@@ -57,4 +57,23 @@ namespace TrelloClone.Exceptions
         {
         }
     }
+
+    public class UserIncorrectLogin : Exception
+    {
+        public UserIncorrectLogin()
+        {
+        }
+
+        public UserIncorrectLogin(string? message) : base(message)
+        {
+        }
+
+        public UserIncorrectLogin(string? message, Exception? innerException) : base(message, innerException)
+        {
+        }
+
+        protected UserIncorrectLogin(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+    }
 }
