@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Security.Claims;
 using TrelloClone.DTO.Creation;
 using TrelloClone.DTO.Display;
 using TrelloClone.DTO.Update;
@@ -9,6 +12,7 @@ namespace TrelloClone.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //    [Authorize]
     public class BoardController : Controller
     {
         private readonly IBoardService _boardService;
@@ -22,10 +26,25 @@ namespace TrelloClone.Controllers
         [ProducesResponseType(200, Type = typeof(BoardDisplayDTO))]
         [ProducesResponseType(404)]
         [TrelloControllerFilter]
+        [Authorize]
         public async Task<IActionResult> GetDisplayBoard(int boardid)
         {
-            var board = await _boardService.GetDisplayBoard(boardid);
-            return Ok(board);
+
+            var requestInitiator = GetCurrentUser();
+            if (requestInitiator != null)
+            {
+                if (requestInitiator.BoardMemberships.Contains(boardid))
+                {
+                    return Ok(await _boardService.GetDisplayBoard(boardid));
+                }
+                else
+                {
+                    return Unauthorized("Not allowed to access this board.");
+                }
+            }
+            return BadRequest();
+
+
         }
 
         [HttpGet("/display")]
@@ -99,6 +118,27 @@ namespace TrelloClone.Controllers
             await _boardService.RemoveMember(memDTO.Username, memDTO.BoardId);
 
             return Ok();
+        }
+
+        private RequestInitiatorDTO GetCurrentUser()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+            if (identity != null)
+            {
+                var userClaims = identity.Claims;
+
+                return new RequestInitiatorDTO
+                {
+                    Username = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.NameIdentifier)?.Value,
+                    Role = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Role)?.Value,
+                    BoardMemberships = JsonConvert
+                        .DeserializeObject<int[]>(userClaims
+                                                    .FirstOrDefault(o => o.Type == Helper.Helper.authorizedBoardsClaimName)?.Value)
+
+                };
+            }
+            return null;
         }
     }
 }
