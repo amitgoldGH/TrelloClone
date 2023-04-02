@@ -3,6 +3,7 @@ using TrelloClone.DTO.Creation;
 using TrelloClone.DTO.Display;
 using TrelloClone.Interfaces.Repositories;
 using TrelloClone.Interfaces.Services;
+using TrelloClone.Models;
 
 namespace TrelloClone.Services
 {
@@ -10,11 +11,13 @@ namespace TrelloClone.Services
     {
         private readonly IMapper _mapper;
         private readonly IBoardListRepository _boardListRepository;
+        private readonly ICardService _cardService;
 
-        public BoardListService(IMapper mapper, IBoardListRepository boardListRepository)
+        public BoardListService(IMapper mapper, IBoardListRepository boardListRepository, ICardService cardService)
         {
             _mapper = mapper;
             _boardListRepository = boardListRepository;
+            _cardService = cardService;
         }
 
         public async Task<BoardListDTO> CreateBoardList(NewBoardListDTO newBoardList)
@@ -25,7 +28,19 @@ namespace TrelloClone.Services
 
         public async Task DeleteBoardList(int listId)
         {
-            await _boardListRepository.DeleteBoardList(listId);
+            var listExists = await HasList(listId);
+            if (listExists)
+            {
+                var bList = await _boardListRepository.GetSpecificList(listId);
+                if (bList.Cards.Count > 0)
+                {
+                    foreach (Card card in bList.Cards)
+                    {
+                        await _cardService.DeleteCard(card.Id);
+                    }
+                }
+                await _boardListRepository.DeleteBoardList(listId);
+            }
         }
 
         public async Task<ICollection<BoardListDTO>> GetAllBoardLists()
@@ -61,6 +76,11 @@ namespace TrelloClone.Services
             else
                 throw new NotImplementedException(); // BOARDLIST BAD REQUEST
 
+        }
+
+        public async Task<bool> HasList(int listId)
+        {
+            return await _boardListRepository.HasList(listId);
         }
     }
 }

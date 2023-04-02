@@ -15,6 +15,8 @@ namespace TrelloClone.Interfaces.Services
 
         Task<BoardListDTO> UpdateBoardList(BoardListDTO updatedList);
 
+        Task<bool> HasList(int listId);
+
         Task DeleteBoardList(int listId);
     }
 }
