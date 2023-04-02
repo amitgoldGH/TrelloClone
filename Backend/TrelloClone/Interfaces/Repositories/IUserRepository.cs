@@ -17,5 +17,7 @@ namespace TrelloClone.Interfaces.Repositories
 
         Task DeleteUser(string username);
 
+        Task UpdateRole(string username, string roleName);
+
     }
 }

@@ -2,6 +2,7 @@
 using TrelloClone.DTO.Creation;
 using TrelloClone.DTO.Display;
 using TrelloClone.Exceptions;
+using TrelloClone.Helper;
 using TrelloClone.Interfaces.Repositories;
 using TrelloClone.Interfaces.Services;
 
@@ -23,17 +24,38 @@ namespace TrelloClone.Services
 
         public async Task<UserDTO> CreateUser(CredentialUserDTO newUser)
         {
+
+            if (newUser == null || Helper.Helper.illegalStringCheck(newUser.Username))
+            {
+                throw new UserBadRequestException();
+            }
+
+            newUser.Username = newUser.Username.ToLower();
             var userExists = await HasUser(newUser.Username);
             if (!userExists)
             {
-                return _mapper.Map<UserDTO>(await _userRepository.CreateUser(newUser.Username, newUser.Password));
+                return _mapper
+                    .Map<UserDTO>(await _userRepository
+                    .CreateUser(
+                        newUser.Username,
+                        Helper.Helper.HashString(newUser.Password)
+                    ));
             }
             else
                 throw new UserAlreadyExistsException();
+
+
         }
 
         public async Task DeleteUser(string username)
         {
+            if (Helper.Helper.illegalStringCheck(username))
+            {
+                throw new UserBadRequestException();
+            }
+
+            username = username.ToLower();
+
             var userExists = await HasUser(username);
             if (userExists)
             {
@@ -52,6 +74,13 @@ namespace TrelloClone.Services
 
         public async Task<UserDTO> GetUser(string username)
         {
+            if (Helper.Helper.illegalStringCheck(username))
+            {
+                throw new UserBadRequestException();
+            }
+
+            username = username.ToLower();
+
             var userExists = await HasUser(username);
             if (userExists)
                 return _mapper.Map<UserDTO>(await _userRepository.GetUser(username));
@@ -67,12 +96,18 @@ namespace TrelloClone.Services
 
         public async Task<UserDTO> UpdateUser(CredentialUserDTO updatedUser)
         {
+            if (updatedUser == null || Helper.Helper.illegalStringCheck(updatedUser.Username))
+            {
+                throw new UserBadRequestException();
+            }
             var userExists = await HasUser(updatedUser.Username);
             if (userExists)
             {
                 var user = await _userRepository.GetUser(updatedUser.Username);
                 if (user.Password != null)
-                    user.Password = updatedUser.Password;
+                {
+                    user.Password = Helper.Helper.HashString(updatedUser.Password);
+                }
                 return _mapper.Map<UserDTO>(await _userRepository.UpdateUser(user));
 
             }
@@ -84,6 +119,61 @@ namespace TrelloClone.Services
         {
             var userExists = await _userRepository.HasUser(username);
             return userExists;
+        }
+
+        public async Task<UserDTO> Login(CredentialUserDTO userLogin)
+        {
+
+            if (userLogin == null || Helper.Helper.illegalStringCheck(userLogin.Username))
+            {
+                throw new UserBadRequestException();
+            }
+
+            userLogin.Username = userLogin.Username.ToLower();
+
+            var userExists = await HasUser(userLogin.Username);
+            if (userExists)
+            {
+                var foundUser = await _userRepository.GetUser(userLogin.Username);
+                if (foundUser.Password == Helper.Helper.HashString(userLogin.Password))
+                {
+                    return _mapper.Map<UserDTO>(foundUser);
+                }
+                else
+                {
+                    throw new UserIncorrectLogin();
+                }
+            }
+            else
+            {
+                throw new UserNotFoundException();
+            }
+        }
+
+        public async Task Updaterole(string username, string roleName)
+        {
+            if (Helper.Helper.illegalStringCheck(username))
+                throw new UserBadRequestException("Illegal username");
+
+            username = username.ToLower();
+
+            var userExists = await HasUser(username);
+            if (userExists)
+            {
+                if (roleName.Equals("Admin") || roleName.Equals("User"))
+                {
+                    await _userRepository.UpdateRole(username, roleName);
+                }
+                else
+                {
+                    throw new UserBadRequestException("Invalid role name");
+                }
+            }
+            else
+            {
+                throw new UserNotFoundException("User not found");
+            }
+
         }
     }
 }

@@ -16,6 +16,10 @@ namespace TrelloClone.Interfaces.Services
 
         Task<UserDTO> UpdateUser(CredentialUserDTO updatedUser);
 
+        Task<UserDTO> Login(CredentialUserDTO user);
+
         Task DeleteUser(string username);
+
+        Task Updaterole(string username, string roleName);
     }
 }
