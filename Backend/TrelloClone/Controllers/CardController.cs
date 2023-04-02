@@ -2,6 +2,7 @@
 using TrelloClone.DTO.Creation;
 using TrelloClone.DTO.Display;
 using TrelloClone.Interfaces.Services;
+using TrelloClone.Models;
 
 namespace TrelloClone.Controllers
 {
@@ -10,10 +11,12 @@ namespace TrelloClone.Controllers
     public class CardController : Controller
     {
         private readonly ICardService _cardService;
+        private readonly IAssignmentService _assignmentService;
 
-        public CardController(ICardService cardService)
+        public CardController(ICardService cardService, IAssignmentService assignmentService)
         {
             _cardService = cardService;
+            _assignmentService = assignmentService;
         }
 
         [HttpGet]
@@ -55,17 +58,22 @@ namespace TrelloClone.Controllers
 
         [HttpPost("{cardId}/assignment")]
         [Consumes("application/json")]
-        public IActionResult AddAssignment(int cardId, [FromBody] string username)
+        public async Task<IActionResult> AddAssignment(int cardId, [FromBody] string username)
         {
             Console.WriteLine(cardId + " " + username);
+
+            await _assignmentService.AddAssignment(username, cardId);
+
             return Ok();
         }
 
         [HttpDelete("{cardId}/assignment")]
         [Consumes("application/json")]
-        public IActionResult RemoveAssignment(int cardId, [FromBody] string username)
+        public  async Task<IActionResult> RemoveAssignment(int cardId, [FromBody] string username)
         {
             Console.WriteLine(cardId + " " + username);
+
+            await _assignmentService.RemoveAssignment(username, cardId);
 
             return Ok();
         }
