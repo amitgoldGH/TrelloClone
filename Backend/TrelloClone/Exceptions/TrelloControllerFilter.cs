@@ -46,6 +46,14 @@ namespace TrelloClone.Exceptions
                     StatusCode = 400,
                 };
             }
+            else if (exceptionType == typeof(UserIncorrectLogin))
+            {
+                context.Result = new ContentResult
+                {
+                    Content = ExceptionMessages.UserInvalidLogin,
+                    StatusCode = 403,
+                };
+            }
             else if (exceptionType == typeof(BoardBadRequestException))
             {
                 context.Result = new ContentResult

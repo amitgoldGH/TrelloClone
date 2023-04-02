@@ -10,6 +10,8 @@
 
         public static readonly string UserAlreadyExists = "A user with this username already exists.";
 
+        public static readonly string UserInvalidLogin = "Incorrect login information.";
+
         public static readonly string BoardBadRequest = "Bad Board Request";
 
         public static readonly string BoardNotFound = "Board with given ID not found.";
