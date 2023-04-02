@@ -27,6 +27,8 @@ namespace TrelloClone.Services
         {
             if (newComment == null)
                 throw new NotImplementedException(); // COMMENT BAD REQUEST EXCEPTION
+
+            newComment.AuthorName = newComment.AuthorName.ToLower();
             var userExists = await _userService.HasUser(newComment.AuthorName);
 
             if (userExists)
