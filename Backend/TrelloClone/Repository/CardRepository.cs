@@ -48,6 +48,7 @@ namespace TrelloClone.Repository
         {
             return await _context.Cards
                 .Include(c => c.Assignments).ThenInclude(ass => ass.User)
+                .Include(c => c.Comments)
                 .ToListAsync();
         }
 
@@ -63,6 +64,7 @@ namespace TrelloClone.Repository
         {
             return await _context.Cards
                 .Include(c => c.Assignments).ThenInclude(ass => ass.User)
+                .Include(c => c.Comments)
                 .FirstAsync(c => c.Id == cardId);
         }
 
