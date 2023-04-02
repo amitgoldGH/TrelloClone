@@ -18,7 +18,7 @@ namespace TrelloClone.Repository
             Assignment ass = new()
             {
                 CardId = cardid,
-                UserId = username,
+                UserId = username.ToLower(),
             };
 
             _context.Assignments.Add(ass);
@@ -27,13 +27,13 @@ namespace TrelloClone.Repository
 
         public async Task<bool> AssignmentExists(string username, int cardid)
         {
-            return await _context.Assignments.AnyAsync(ass => (ass.CardId == cardid) && (ass.UserId == username));
+            return await _context.Assignments.AnyAsync(ass => (ass.CardId == cardid) && (ass.UserId == username.ToLower()));
         }
 
         public async Task RemoveAssignment(string username, int cardid)
         {
             var ass = await _context.Assignments
-                .Where(ass => (ass.CardId == cardid) && (ass.UserId == username))
+                .Where(ass => (ass.CardId == cardid) && (ass.UserId == username.ToLower()))
                 .FirstAsync();
             _context.Assignments.Remove(ass);
             await _context.SaveChangesAsync();

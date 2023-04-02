@@ -21,7 +21,7 @@ namespace TrelloClone.Repository
         public async Task<User> CreateUser(string username, string password)
         {
 
-            var user = new User { Username = username, Password = password, };
+            var user = new User { Username = username, Password = password, Role = "User" };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
@@ -77,6 +77,15 @@ namespace TrelloClone.Repository
             return updatedUser;
         }
 
+        public async Task UpdateRole(string username, string roleName)
+        {
+            var user = await _context.Users.FindAsync(username);
+            if (user != null)
+            {
+                user.Role = roleName;
+                await _context.SaveChangesAsync();
+            }
 
+        }
     }
 }
