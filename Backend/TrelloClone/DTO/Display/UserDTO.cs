@@ -6,6 +6,8 @@ namespace TrelloClone.DTO.Display
     {
         public string Username { get; set; } // Private key
 
+        public string Role { get; set; }
+
         public ICollection<UserMembershipDTO> Memberships { get; set; }
 
 
