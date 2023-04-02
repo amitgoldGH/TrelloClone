@@ -15,13 +15,15 @@ namespace TrelloClone.Services
         private readonly IBoardRepository _boardRepository;
         private readonly IMembershipService _membershipService;
         private readonly IUserService _userService;
+        private readonly IBoardListService _boardListService;
 
-        public BoardService(IMapper mapper, IBoardRepository boardRepository, IMembershipService membershipService, IUserService userService)
+        public BoardService(IMapper mapper, IBoardRepository boardRepository, IMembershipService membershipService, IUserService userService, IBoardListService boardListService)
         {
             _mapper = mapper;
             _boardRepository = boardRepository;
             _membershipService = membershipService;
             _userService = userService;
+            _boardListService = boardListService;
         }
         public async Task AddMember(string username, int boardid)
         {
@@ -130,16 +132,29 @@ namespace TrelloClone.Services
 
         public async Task DeleteBoard(int boardid)
         {
-
-            var board = await GetBoard(boardid);
-            if (board.Members.Count > 0)
+            var boardExists = await HasBoard(boardid);
+            if (!boardExists)
             {
-                foreach (BoardMembershipDTO mem in board.Members)
+                return;
+            }
+
+            var fBoard = await _boardRepository.GetBoard(boardid);
+
+            if (fBoard.BoardLists.Count > 0 )
+            {
+                foreach (BoardList bList in fBoard.BoardLists) 
                 {
-                    await RemoveMember(mem.Username, board.Id);
+                    await _boardListService.DeleteBoardList(bList.Id);
                 }
             }
-            await _boardRepository.DeleteBoard(board.Id);
+            if (fBoard.Memberships.Count > 0)
+            {
+                foreach (Membership mem in fBoard.Memberships)
+                {
+                    await RemoveMember(mem.UserId, fBoard.Id);
+                }
+            }
+            await _boardRepository.DeleteBoard(fBoard.Id);
         }
 
         public async Task<ICollection<BoardDTO>> GetAllBoards()

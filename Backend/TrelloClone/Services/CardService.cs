@@ -3,6 +3,7 @@ using TrelloClone.DTO.Creation;
 using TrelloClone.DTO.Display;
 using TrelloClone.Interfaces.Repositories;
 using TrelloClone.Interfaces.Services;
+using TrelloClone.Models;
 
 namespace TrelloClone.Services
 {
@@ -11,12 +12,14 @@ namespace TrelloClone.Services
         private readonly IMapper _mapper;
         private readonly ICardRespository _cardRespository;
         private readonly IAssignmentService _assignmentService;
+        private readonly ICommentService _commentService;
 
-        public CardService(IMapper mapper, ICardRespository cardRespository, IAssignmentService assignmentService)
+        public CardService(IMapper mapper, ICardRespository cardRespository, IAssignmentService assignmentService, ICommentService commentService)
         {
             _mapper = mapper;
             _cardRespository = cardRespository;
             _assignmentService = assignmentService;
+            _commentService = commentService;
         }
 
         public async Task<CardDTO> CreateCard(NewCardDTO newCard)
@@ -32,6 +35,21 @@ namespace TrelloClone.Services
             var cardExists = await _cardRespository.HasCard(cardId);
             if (cardExists)
             {
+                var card = await _cardRespository.GetCard(cardId);
+                if (card.Assignments.Count > 0)
+                {
+                    foreach (Assignment ass in card.Assignments)
+                    {
+                        await _assignmentService.RemoveAssignment(ass.UserId, cardId);
+                    }
+                }
+                if (card.Comments.Count > 0)
+                {
+                    foreach (Comment comment in card.Comments)
+                    {
+                        await _commentService.DeleteComment(comment.Id);
+                    }
+                }
                 await _cardRespository.DeleteCard(cardId);
             }
         }
