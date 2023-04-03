@@ -20,5 +20,9 @@ namespace TrelloClone.Interfaces.Repositories
         Task<Comment> UpdateComment(Comment updatedComment);
 
         Task DeleteComment(int commentId);
+
+        Task DeletedAuthor(string username);
+
     }
+
 }
