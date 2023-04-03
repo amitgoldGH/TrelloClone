@@ -12,7 +12,7 @@ namespace TrelloClone.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //    [Authorize]
+    [Authorize]
     public class BoardController : Controller
     {
         private readonly IBoardService _boardService;
@@ -22,103 +22,9 @@ namespace TrelloClone.Controllers
             _boardService = boardService;
         }
 
-        [HttpGet("/display/{boardid}")]
-        [ProducesResponseType(200, Type = typeof(BoardDisplayDTO))]
-        [ProducesResponseType(404)]
-        [TrelloControllerFilter]
-        [Authorize]
-        public async Task<IActionResult> GetDisplayBoard(int boardid)
-        {
-
-            var requestInitiator = GetCurrentUser();
-            if (requestInitiator != null)
-            {
-                if (requestInitiator.BoardMemberships.Contains(boardid))
-                {
-                    return Ok(await _boardService.GetDisplayBoard(boardid));
-                }
-                else
-                {
-                    return Unauthorized("Not allowed to access this board.");
-                }
-            }
-            return BadRequest();
-
-
-        }
-
-        [HttpGet("/display")]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<BoardDisplayDTO>))]
-        public async Task<IActionResult> GetDisplayBoards()
-        {
-            var boards = await _boardService.GetAllDisplayBoards();
-            return Ok(boards);
-        }
-
-        [HttpGet("{boardid}")]
-        [ProducesResponseType(200, Type = typeof(BoardDTO))]
-        [ProducesResponseType(404)]
-        [TrelloControllerFilter]
-        public async Task<IActionResult> GetBoard(int boardid)
-        {
-            var board = await _boardService.GetBoard(boardid);
-            return Ok(board);
-        }
-
-        [HttpGet("")]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<BoardDTO>))]
-        public async Task<IActionResult> GetBoards()
-        {
-            var boards = await _boardService.GetAllBoards();
-            return Ok(boards);
-        }
-
-        [HttpPost]
-        [Consumes("application/json")]
-        [ProducesResponseType(200, Type = typeof(BoardDTO))]
-        [TrelloControllerFilter]
-        public async Task<IActionResult> CreateBoard(NewKanbanDTO input)
-        {
-            var board = await _boardService.CreateBoard(input);
-
-            return Ok(board);
-        }
-
-        [HttpDelete("{boardid}")]
-        [TrelloControllerFilter]
-        public async Task<IActionResult> DeleteBoard(int boardid)
-        {
-            await _boardService.DeleteBoard(boardid);
-
-            return Ok();
-        }
-
-        [HttpPut]
-        [TrelloControllerFilter]
-        public async Task<IActionResult> UpdateBoard(UpdateKanbanBoardDTO updatedBoard)
-        {
-            return Ok(await _boardService.UpdateBoard(updatedBoard));
-        }
-
-        [HttpPost("/membership")]
-        [Consumes("application/json")]
-        [TrelloControllerFilter]
-        public async Task<IActionResult> AddMembership(NewMembershipDTO memDTO)
-        {
-            await _boardService.AddMember(memDTO.Username, memDTO.BoardId);
-
-            return Ok();
-        }
-
-        [HttpDelete("/membership")]
-        [Consumes("application/json")]
-        [TrelloControllerFilter]
-        public async Task<IActionResult> RemoveMembership(NewMembershipDTO memDTO)
-        {
-            await _boardService.RemoveMember(memDTO.Username, memDTO.BoardId);
-
-            return Ok();
-        }
+        ///////////////////////
+        // PRIVATE FUNCTIONS //
+        ///////////////////////
 
         private RequestInitiatorDTO GetCurrentUser()
         {
@@ -146,5 +52,172 @@ namespace TrelloClone.Controllers
             }
             return null;
         }
+
+        private async Task<bool> CheckCurrentUserBoardAccess(int boardId)
+        {
+            var requestInitiator = GetCurrentUser();
+            if (requestInitiator == null)
+                return false;
+            else
+            {
+                var actionAllowed = await _boardService.CheckUserActionAllowed(requestInitiator, boardId);
+                return actionAllowed;
+            }
+        }
+
+        ///////////////////
+        // BOARD ACTIONS //
+        ///////////////////
+
+        [HttpGet("/display/{boardId}")]
+        [ProducesResponseType(200, Type = typeof(BoardDisplayDTO))]
+        [ProducesResponseType(404)]
+        [TrelloControllerFilter]
+        //[Authorize]
+        public async Task<IActionResult> GetDisplayBoard(int boardId)
+        {
+
+            var accessAllowed = await CheckCurrentUserBoardAccess(boardId);
+            if (accessAllowed)
+            {
+                return Ok(await _boardService.GetDisplayBoard(boardId));
+            }
+            else
+            {
+                return Unauthorized("Not allowed to access this board.");
+            }
+
+
+
+        }
+
+        [HttpGet("/display")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<BoardDisplayDTO>))]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDisplayBoards()
+        {
+            var boards = await _boardService.GetAllDisplayBoards();
+            return Ok(boards);
+        }
+
+        [HttpGet("{boardId}")]
+        [ProducesResponseType(200, Type = typeof(BoardDTO))]
+        [ProducesResponseType(404)]
+        [TrelloControllerFilter]
+        //[Authorize]
+        public async Task<IActionResult> GetBoard(int boardId)
+        {
+            var accessAllowed = await CheckCurrentUserBoardAccess(boardId);
+            if (accessAllowed)
+            {
+                var board = await _boardService.GetBoard(boardId);
+                return Ok(board);
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+        [HttpGet("")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<BoardDTO>))]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetBoards()
+        {
+            var boards = await _boardService.GetAllBoards();
+            return Ok(boards);
+        }
+
+        [HttpPost("{Title}")]
+        [Consumes("application/json")]
+        [ProducesResponseType(200, Type = typeof(BoardDTO))]
+        [TrelloControllerFilter]
+        //[Authorize]
+        public async Task<IActionResult> CreateBoard(string Title)
+        {
+            var requestInitiator = GetCurrentUser();
+            NewKanbanDTO input = new NewKanbanDTO { Title = Title, UserId = requestInitiator.Username };
+            var board = await _boardService.CreateBoard(input);
+
+            return Ok(board);
+        }
+
+        [HttpDelete("{boardId}")]
+        [TrelloControllerFilter]
+        //[Authorize]
+        public async Task<IActionResult> DeleteBoard(int boardId)
+        {
+            var accessAllowed = await CheckCurrentUserBoardAccess(boardId);
+            if (accessAllowed)
+            {
+                await _boardService.DeleteBoard(boardId);
+                return Ok();
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpPut("{boardId}")]
+        [Consumes("application/json")]
+        [TrelloControllerFilter]
+        //[Authorize]
+        public async Task<IActionResult> UpdateBoard(int boardId, [FromBody] UpdateKanbanBoardDTO updatedBoard)
+        {
+            var accessAllowed = await CheckCurrentUserBoardAccess(boardId);
+            if (accessAllowed)
+            {
+                return Ok(await _boardService.UpdateBoard(updatedBoard));
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+
+        ////////////////////////
+        // MEMBERSHIP ACTIONS //
+        ////////////////////////
+
+        [HttpPost("{boardId}/membership/{username}")]
+        [TrelloControllerFilter]
+        //  [Authorize]
+        public async Task<IActionResult> AddMembership(int boardId, string username)
+        {
+            var accessAllowed = await CheckCurrentUserBoardAccess(boardId);
+            if (accessAllowed)
+            {
+                await _boardService.AddMember(username, boardId);
+                return Ok();
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+        [HttpDelete("{boardId}/membership/{username}")]
+        [TrelloControllerFilter]
+        //[Authorize]
+        public async Task<IActionResult> RemoveMembership(int boardId, string username)
+        {
+            var accessAllowed = await CheckCurrentUserBoardAccess(boardId);
+            if (accessAllowed)
+            {
+                await _boardService.RemoveMember(username, boardId);
+                return Ok();
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+
+        }
+
+
     }
 }
