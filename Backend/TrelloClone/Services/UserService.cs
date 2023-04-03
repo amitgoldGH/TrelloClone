@@ -13,12 +13,16 @@ namespace TrelloClone.Services
         private readonly IMapper _mapper;
         private readonly IUserRepository _userRepository;
         private readonly IMembershipService _membershipService;
+        private readonly ICommentRepository _commentRepository;
+        private readonly IAssignmentService _assignmentService;
 
-        public UserService(IMapper mapper, IUserRepository userRepository, IMembershipService membershipService)
+        public UserService(IMapper mapper, IUserRepository userRepository, IMembershipService membershipService, IAssignmentService assignmentService, ICommentRepository commentRepository)
         {
             _mapper = mapper;
             _userRepository = userRepository;
             _membershipService = membershipService;
+            _commentRepository = commentRepository;
+            _assignmentService = assignmentService;
         }
 
 
@@ -49,10 +53,7 @@ namespace TrelloClone.Services
 
         public async Task DeleteUser(string username)
         {
-            if (Helper.Helper.illegalStringCheck(username))
-            {
-                throw new UserBadRequestException();
-            }
+
 
             username = username.ToLower();
 
@@ -67,6 +68,14 @@ namespace TrelloClone.Services
                         await _membershipService.RemoveMembership(username, mem.BoardId);
                     }
                 }
+                if (user.Assignments.Count > 0)
+                {
+                    foreach (var ass in user.Assignments)
+                    {
+                        await _assignmentService.RemoveAssignment(username, ass.CardId);
+                    }
+                }
+                await _commentRepository.DeletedAuthor(username); // Changes all comments by the author to "DELETED_USER"
                 await _userRepository.DeleteUser(username);
             }
 
