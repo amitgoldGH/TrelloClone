@@ -89,5 +89,19 @@ namespace TrelloClone.Repository
             await _context.SaveChangesAsync();
             return updatedComment;
         }
+
+        public async Task DeletedAuthor(string username)
+        {
+            var comments = await _context.Comments
+                .Where(comm => comm.AuthorName == username)
+                .ToListAsync();
+
+            foreach (var comment in comments)
+            {
+                comment.AuthorName = "DELETED_USER";
+                _context.Comments.Update(comment);
+            }
+            await _context.SaveChangesAsync();
+        }
     }
 }
