@@ -13,28 +13,27 @@ namespace TrelloClone.Services
     {
         private readonly IMapper _mapper;
         private readonly ICommentRepository _commentRepository;
-        private readonly IUserService _userService;
+        private readonly IUserRepository _userRepository;
 
         //TODO ADD CARD SERVICE TO DEP INJECTION
-        public CommentService(IMapper mapper, ICommentRepository commentRepository, IUserService userService)
+        public CommentService(IMapper mapper, ICommentRepository commentRepository, IUserRepository userRepository)
         {
             _mapper = mapper;
             _commentRepository = commentRepository;
-            _userService = userService;
+            _userRepository = userRepository;
         }
 
-        public async Task<CommentDTO> CreateComment(NewCommentDTO newComment)
+        public async Task<CommentDTO> CreateComment(NewCommentDTO newComment, string authorName, int cardId)
         {
             if (newComment == null)
                 throw new NotImplementedException(); // COMMENT BAD REQUEST EXCEPTION
 
-            newComment.AuthorName = newComment.AuthorName.ToLower();
-            var userExists = await _userService.HasUser(newComment.AuthorName);
+            var userExists = await _userRepository.HasUser(authorName);
 
             if (userExists)
             {
                 // TODO : ADD CARD VERIFICATION + TEXT VERIFICATION
-                return _mapper.Map<CommentDTO>(await _commentRepository.CreateComment(newComment.AuthorName, newComment.Text, newComment.CardId));
+                return _mapper.Map<CommentDTO>(await _commentRepository.CreateComment(authorName, newComment.Text, cardId));
             }
             else
             {
@@ -64,7 +63,7 @@ namespace TrelloClone.Services
 
         public async Task<ICollection<CommentDTO>> GetAllUserComments(string username)
         {
-            var userExists = await _userService.HasUser(username);
+            var userExists = await _userRepository.HasUser(username);
             if (userExists)
             {
                 return _mapper.Map<List<CommentDTO>>(await _commentRepository.GetAllUserComments(username));
@@ -112,6 +111,11 @@ namespace TrelloClone.Services
                 }
             }
 
+        }
+
+        public async Task DeletedAuthor(string authorName)
+        {
+            await _commentRepository.DeletedAuthor(authorName);
         }
     }
 }
