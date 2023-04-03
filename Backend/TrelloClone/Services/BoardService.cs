@@ -140,9 +140,9 @@ namespace TrelloClone.Services
 
             var fBoard = await _boardRepository.GetBoard(boardid);
 
-            if (fBoard.BoardLists.Count > 0 )
+            if (fBoard.BoardLists.Count > 0)
             {
-                foreach (BoardList bList in fBoard.BoardLists) 
+                foreach (BoardList bList in fBoard.BoardLists)
                 {
                     await _boardListService.DeleteBoardList(bList.Id);
                 }
@@ -206,6 +206,22 @@ namespace TrelloClone.Services
             }
             else
                 throw new BoardNotFoundException();
+        }
+
+        public async Task<bool> CheckUserActionAllowed(RequestInitiatorDTO initiator, int boardId)
+        {
+            if (initiator == null)
+                throw new BoardBadRequestException();
+            else
+            {
+                var membershipExists = await _membershipService.MembershipExists(initiator.Username, boardId);
+                if (membershipExists)
+                {
+                    return true;
+                }
+                else
+                    return false;
+            }
         }
     }
 }
