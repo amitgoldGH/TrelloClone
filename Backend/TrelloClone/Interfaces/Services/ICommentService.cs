@@ -6,7 +6,7 @@ namespace TrelloClone.Interfaces.Services
 {
     public interface ICommentService
     {
-        Task<CommentDTO> CreateComment(NewCommentDTO newComment);
+        Task<CommentDTO> CreateComment(NewCommentDTO newComment, string authorName, int cardId);
         Task DeleteComment(int commentId);
         Task<ICollection<CommentDTO>> GetAllCardComments(int cardId);
         Task<ICollection<CommentDTO>> GetAllComments();
