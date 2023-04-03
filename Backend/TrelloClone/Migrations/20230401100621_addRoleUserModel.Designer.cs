@@ -11,15 +11,15 @@ using TrelloClone.Data;
 namespace TrelloClone.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230322071112_UpdatedModelsAndRelationshipsV1")]
-    partial class UpdatedModelsAndRelationshipsV1
+    [Migration("20230401100621_addRoleUserModel")]
+    partial class addRoleUserModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.3")
+                .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -156,6 +156,10 @@ namespace TrelloClone.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
