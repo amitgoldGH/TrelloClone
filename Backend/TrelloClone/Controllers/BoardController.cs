@@ -132,11 +132,17 @@ namespace TrelloClone.Controllers
                 {
                     Username = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.NameIdentifier)?.Value,
                     Role = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Role)?.Value,
+                };
+
+                /*return new RequestInitiatorDTO
+                {
+                    Username = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.NameIdentifier)?.Value,
+                    Role = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Role)?.Value,
                     BoardMemberships = JsonConvert
                         .DeserializeObject<int[]>(userClaims
                                                     .FirstOrDefault(o => o.Type == Helper.Helper.authorizedBoardsClaimName)?.Value)
 
-                };
+                };*/
             }
             return null;
         }
