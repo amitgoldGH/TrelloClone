@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿/*using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Security.Claims;
@@ -40,7 +40,7 @@ namespace TrelloClone.Controllers
                     Role = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Role)?.Value,
                 };
 
-                /*return new RequestInitiatorDTO
+                *//*return new RequestInitiatorDTO
                 {
                     Username = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.NameIdentifier)?.Value,
                     Role = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Role)?.Value,
@@ -48,7 +48,7 @@ namespace TrelloClone.Controllers
                         .DeserializeObject<int[]>(userClaims
                                                     .FirstOrDefault(o => o.Type == Helper.Helper.authorizedBoardsClaimName)?.Value)
 
-                };*/
+                };*//*
             }
             return null;
         }
@@ -221,3 +221,4 @@ namespace TrelloClone.Controllers
 
     }
 }
+*/
