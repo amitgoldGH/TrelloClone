@@ -46,34 +46,16 @@ namespace TrelloClone.Controllers
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
 
-            int[] authorizedBoardsArr;
-
-            if (user.Memberships.Count == 0)
-            {
-                authorizedBoardsArr = new int[] { -1 };
-            }
-            else
-            {
-                authorizedBoardsArr = new int[user.Memberships.Count];
-                for (int i = 0; i < user.Memberships.Count; i++)
-                {
-                    authorizedBoardsArr[i] = user.Memberships.ElementAt(i).BoardId;
-                }
-            }
-
-
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Username),
                 new Claim(ClaimTypes.Role, user.Role),
-                new Claim(Helper.Helper.authorizedBoardsClaimName, JsonConvert.SerializeObject(authorizedBoardsArr)),
             };
-
 
             var token = new JwtSecurityToken(_config["Jwt:Issuer"],
               _config["Jwt:Audience"],
               claims,
-              expires: DateTime.Now.AddMinutes(15),
+              expires: DateTime.Now.AddMinutes(20),
               signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
