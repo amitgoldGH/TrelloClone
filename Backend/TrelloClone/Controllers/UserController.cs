@@ -15,7 +15,7 @@ namespace TrelloClone.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class UserController : Controller
     {
         private readonly IUserService _userService;
@@ -27,10 +27,11 @@ namespace TrelloClone.Controllers
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<UserDTO>))]
+        [AllowAnonymous]
         public async Task<IActionResult> GetUsers()
         {
 
-            var initiatingUser = GetCurrentUser();
+            //var initiatingUser = GetCurrentUser();
 
             var users = await _userService.GetUsers();
 
@@ -49,14 +50,26 @@ namespace TrelloClone.Controllers
         [TrelloControllerFilter]
         public async Task<IActionResult> GetUser(string username)
         {
-
-
-            var user = await _userService.GetUser(username);
-            if (!ModelState.IsValid)
+            if (!Helper.Helper.illegalStringCheck(username))
             {
-                return BadRequest(ModelState);
+                var requestInitiator = GetCurrentUser();
+                username = username.ToLower();
+                if (requestInitiator.Role == "Admin" || requestInitiator.Username == username)
+                {
+                    var user = await _userService.GetUser(username);
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest(ModelState);
+                    }
+                    return Ok(user);
+                }
+                else
+                    return Unauthorized(ExceptionMessages.UnauthorizedAction);
             }
-            return Ok(user);
+            else
+                return BadRequest(ExceptionMessages.UserBadRequest);
+
+
 
 
         }
@@ -69,11 +82,17 @@ namespace TrelloClone.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> RegisterUser(CredentialUserDTO newUser)
         {
-            var createdUser = await _userService.CreateUser(newUser);
-            if (createdUser == null)
-                return BadRequest("Failed to create user.");
-            else
-                return Ok(createdUser);
+            if (newUser != null && !Helper.Helper.illegalStringCheck(newUser.Username) && !Helper.Helper.illegalStringCheck(newUser.Password))
+            {
+                newUser.Username = newUser.Username.ToLower();
+                var createdUser = await _userService.CreateUser(newUser);
+                if (createdUser == null)
+                    return BadRequest("Failed to create user.");
+                else
+                    return Ok(createdUser);
+
+            }
+            else return BadRequest(ExceptionMessages.UserBadRequest);
         }
 
 
@@ -81,6 +100,10 @@ namespace TrelloClone.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(string username)
         {
+            if (Helper.Helper.illegalStringCheck(username))
+            {
+                return BadRequest("Illegal input");
+            }
             var requestInitiatingUser = GetCurrentUser();
             if (requestInitiatingUser != null)
             {
