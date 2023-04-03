@@ -421,6 +421,7 @@ namespace TrelloClone.Controllers
 
         [HttpGet("/test/commentTest")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<CommentDTO>))]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllComments()
         {
             var comments = await _commentService.GetAllComments();
