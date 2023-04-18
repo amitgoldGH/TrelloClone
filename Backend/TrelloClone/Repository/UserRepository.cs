@@ -42,6 +42,7 @@ namespace TrelloClone.Repository
             var user = await _context.Users
                 .Include(u => u.Memberships)
                 .ThenInclude(m => m.KanbanBoard)
+                .Include(u => u.Assignments)
                 .FirstAsync(u => u.Username == username);
             return user;
 

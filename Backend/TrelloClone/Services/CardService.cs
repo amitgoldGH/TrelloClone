@@ -22,11 +22,11 @@ namespace TrelloClone.Services
             _commentService = commentService;
         }
 
-        public async Task<CardDTO> CreateCard(NewCardDTO newCard)
+        public async Task<CardDTO> CreateCard(NewCardDTO newCard, int listId)
         {
             if (newCard == null)
                 throw new NotImplementedException(); // TODO THROW BAD CARD REQUEST
-            var card = await _cardRespository.CreateCard(newCard.Title, newCard.Description, newCard.BoardListId);
+            var card = await _cardRespository.CreateCard(newCard.Title, newCard.Description, listId);
             return _mapper.Map<CardDTO>(card);
         }
 

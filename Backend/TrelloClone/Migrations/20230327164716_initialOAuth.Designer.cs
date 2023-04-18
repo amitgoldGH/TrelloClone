@@ -11,15 +11,15 @@ using TrelloClone.Data;
 namespace TrelloClone.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230309154626_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20230327164716_initialOAuth")]
+    partial class initialOAuth
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.3")
+                .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -47,7 +47,7 @@ namespace TrelloClone.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("KanbanBoardId")
+                    b.Property<int>("BoardId")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -56,7 +56,7 @@ namespace TrelloClone.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("KanbanBoardId");
+                    b.HasIndex("BoardId");
 
                     b.ToTable("BoardLists");
                 });
@@ -98,7 +98,7 @@ namespace TrelloClone.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AuthorUsername")
+                    b.Property<string>("AuthorName")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
@@ -111,7 +111,7 @@ namespace TrelloClone.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AuthorUsername");
+                    b.HasIndex("AuthorName");
 
                     b.HasIndex("CardId");
 
@@ -187,7 +187,7 @@ namespace TrelloClone.Migrations
                 {
                     b.HasOne("TrelloClone.Models.KanbanBoard", "KanbanBoard")
                         .WithMany("BoardLists")
-                        .HasForeignKey("KanbanBoardId")
+                        .HasForeignKey("BoardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -209,7 +209,7 @@ namespace TrelloClone.Migrations
                 {
                     b.HasOne("TrelloClone.Models.User", "Author")
                         .WithMany("Comments")
-                        .HasForeignKey("AuthorUsername")
+                        .HasForeignKey("AuthorName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

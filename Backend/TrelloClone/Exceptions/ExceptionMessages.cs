@@ -15,5 +15,7 @@
         public static readonly string BoardBadRequest = "Bad Board Request";
 
         public static readonly string BoardNotFound = "Board with given ID not found.";
+
+        public static readonly string UnauthorizedAction = "Unauthorized to perform this action.";
     }
 }

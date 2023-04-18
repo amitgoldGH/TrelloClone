@@ -10,7 +10,7 @@
 
         public int Status { get; set; }
 
-        //public int BoardListId { get; set; }
+        public int BoardListId { get; set; }
 
         public ICollection<CardAssignmentDTO> AssignmentList { get; set; }
 

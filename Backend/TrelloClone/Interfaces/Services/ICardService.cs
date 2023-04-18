@@ -5,7 +5,7 @@ namespace TrelloClone.Interfaces.Services
 {
     public interface ICardService
     {
-        Task<CardDTO> CreateCard(NewCardDTO newCard);
+        Task<CardDTO> CreateCard(NewCardDTO newCard, int listId);
 
         Task<CardDTO> UpdateCard(CardDTO updatedCard);
 

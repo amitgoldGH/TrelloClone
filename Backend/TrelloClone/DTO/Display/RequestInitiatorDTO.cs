@@ -6,6 +6,6 @@
 
         public string Role { get; set; }
 
-        public int[] BoardMemberships { get; set; }
+        //public int[] BoardMemberships { get; set; }
     }
 }

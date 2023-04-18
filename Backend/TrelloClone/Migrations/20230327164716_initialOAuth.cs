@@ -5,7 +5,7 @@
 namespace TrelloClone.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initialOAuth : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -42,14 +42,14 @@ namespace TrelloClone.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    KanbanBoardId = table.Column<int>(type: "int", nullable: false)
+                    BoardId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BoardLists", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BoardLists_Boards_KanbanBoardId",
-                        column: x => x.KanbanBoardId,
+                        name: "FK_BoardLists_Boards_BoardId",
+                        column: x => x.BoardId,
                         principalTable: "Boards",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -132,8 +132,8 @@ namespace TrelloClone.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CardId = table.Column<int>(type: "int", nullable: false),
-                    AuthorUsername = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    AuthorName = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CardId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -145,8 +145,8 @@ namespace TrelloClone.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Comments_Users_AuthorUsername",
-                        column: x => x.AuthorUsername,
+                        name: "FK_Comments_Users_AuthorName",
+                        column: x => x.AuthorName,
                         principalTable: "Users",
                         principalColumn: "Username",
                         onDelete: ReferentialAction.Cascade);
@@ -158,9 +158,9 @@ namespace TrelloClone.Migrations
                 column: "CardId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BoardLists_KanbanBoardId",
+                name: "IX_BoardLists_BoardId",
                 table: "BoardLists",
-                column: "KanbanBoardId");
+                column: "BoardId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Cards_BoardListId",
@@ -168,9 +168,9 @@ namespace TrelloClone.Migrations
                 column: "BoardListId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_AuthorUsername",
+                name: "IX_Comments_AuthorName",
                 table: "Comments",
-                column: "AuthorUsername");
+                column: "AuthorName");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_CardId",

@@ -70,6 +70,14 @@ namespace TrelloClone.Exceptions
                     StatusCode = 404
                 };
             }
+            else if (exceptionType == typeof(UnauthorizedAction))
+            {
+                context.Result = new ContentResult
+                {
+                    Content = ExceptionMessages.UnauthorizedAction,
+                    StatusCode = 403,
+                };
+            }
 
 
 

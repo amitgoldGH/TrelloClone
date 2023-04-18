@@ -32,6 +32,8 @@ namespace TrelloClone.Interfaces.Services
         Task<ICollection<BoardDisplayDTO>> GetAllDisplayBoards();
         Task<BoardDisplayDTO> GetDisplayBoard(int boardid);
 
+        Task<bool> CheckUserActionAllowed(RequestInitiatorDTO initiator, int boardId);
+
 
     }
 }
